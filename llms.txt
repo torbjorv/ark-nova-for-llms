@@ -1,0 +1,23 @@
+# Ark Nova for LLMs
+
+> A public, structured card database for the board game **Ark Nova** (Feuerland Spiele / Capstone Games). Designed to be loaded by LLMs and AI agents to answer natural-language queries about Ark Nova cards — filter by ability, biome, continent, size, appeal, conservation points, or any combination.
+
+The dataset is one JSON object per line in `cards.jsonl`. Every filterable attribute is an explicit typed field or a closed-vocabulary tag; full card text is included for questions that structured fields can't answer. Scope: base game, Marine Worlds expansion, Zoo Map pack, and promos (~600–700 cards when complete).
+
+## Data
+
+- [cards.jsonl](cards.jsonl): The full dataset — one Ark Nova card per line, all structured fields plus verbatim card text. Load this in full, then filter in context.
+- [SCHEMA.md](SCHEMA.md): Every field's name, type, semantics, and the closed enum values for `set`, `type`, `biomes`, and `continents`.
+- [ABILITIES.md](ABILITIES.md): Closed vocabulary of tags for `abilities`, `requires`, `provides`, and `triggers`, each with a one-line definition. Treat as authoritative — do not invent tags not listed here.
+
+## Guides
+
+- [README.md](README.md): Human-facing overview, example queries, and step-by-step instructions for LLMs on how to answer queries against this dataset correctly.
+- [CLAUDE.md](CLAUDE.md): Author-side rules for contributors editing `cards.jsonl` or the vocabularies.
+
+## Sets
+
+- [sets/base.txt](sets/base.txt): Card IDs in the Ark Nova base set.
+- [sets/marine-worlds.txt](sets/marine-worlds.txt): Card IDs in the Marine Worlds expansion.
+- [sets/zoo-map.txt](sets/zoo-map.txt): Card IDs in the Zoo Map pack.
+- [sets/promos.txt](sets/promos.txt): Card IDs for promo cards.
