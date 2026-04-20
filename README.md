@@ -80,6 +80,10 @@ Maintainer: set these topics on the repo to improve discoverability:
 
 `ark-nova` · `board-games` · `board-game-data` · `dataset` · `jsonl` · `llms-txt` · `llm-friendly` · `ai-agents`
 
+## Support the creators
+
+If you enjoy using this dataset, please buy Ark Nova — it's a fantastic game, and your purchase directly supports the designers and publishers who made it. [capstone-games.com](https://www.capstone-games.com) · [feuerland-spiele.de](https://www.feuerland-spiele.de)
+
 ## Copyright
 
-Ark Nova is © Feuerland Spiele / Capstone Games. Card text excerpts here are for query and reference purposes. No card images are redistributed.
+Ark Nova is © Feuerland Spiele / Capstone Games. Card names, text, and attribute data here are reproduced for reference and query purposes only, in the spirit of fan wikis and BGG community resources. No card images are redistributed. Not affiliated with Feuerland or Capstone. If you're a rights holder and want anything removed, open an issue.
