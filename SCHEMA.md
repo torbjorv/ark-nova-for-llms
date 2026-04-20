@@ -38,22 +38,19 @@ animal | sponsor | conservation-project | zoo-map | final-scoring | other
 ```
 
 ### `biomes`
-Verify and extend this list while authoring. Starter set:
+Ark Nova has three habitat icons that appear on cards. Use `[]` for cards with no habitat icon.
 ```
-grassland | forest | mountain | desert | tundra | water | marine | tropical | rock
+rock | water | marine
 ```
-- `grassland` — savanna, prairie, steppe.
-- `forest` — temperate forest.
-- `tropical` — jungle, rainforest.
-- `water` — freshwater habitats (rivers, lakes, wetlands).
-- `marine` — saltwater habitats (sea/ocean); Marine Worlds addition.
-- `rock` — rocky / cliff habitats (relevant for rock-adjacency abilities).
+- `rock` — card has the rock-habitat icon (typically requires rock in its enclosure).
+- `water` — card has the water-habitat icon (typically requires water in its enclosure).
+- `marine` — card has the marine / aquarium icon (Marine Worlds group).
 
 ### `continents`
+Ark Nova has five continent icons. Use `[]` for cards with no continent attribution. Use multiple entries for animals native to multiple continents.
 ```
-africa | asia | europe | north-america | south-america | australia | antarctica
+africa | americas | asia | europe | australia
 ```
-Use `[]` for cards with no continent attribution. Use multiple entries for animals native to multiple continents.
 
 ## Tag fields
 
@@ -67,8 +64,8 @@ Use `[]` for cards with no continent attribution. Use multiple entries for anima
   "name": "Polar Bear",
   "set": "marine-worlds",
   "type": "animal",
-  "biomes": ["marine", "tundra"],
-  "continents": ["north-america", "europe", "asia"],
+  "biomes": ["marine", "rock"],
+  "continents": ["americas", "asia", "europe"],
   "size": 3,
   "abilities": ["predator", "large-animal"],
   "requires": ["large-aquarium", "rock-adjacent-enclosure"],

@@ -36,8 +36,8 @@ REQUIRED_FIELDS = {
 
 SET_ENUM = {"base", "marine-worlds", "zoo-map", "promos"}
 TYPE_ENUM = {"animal", "sponsor", "conservation-project", "zoo-map", "final-scoring", "other"}
-BIOME_ENUM = {"grassland", "forest", "mountain", "desert", "tundra", "water", "marine", "tropical", "rock"}
-CONTINENT_ENUM = {"africa", "asia", "europe", "north-america", "south-america", "australia", "antarctica"}
+BIOME_ENUM = {"rock", "water", "marine"}
+CONTINENT_ENUM = {"africa", "americas", "asia", "europe", "australia"}
 
 TAG_LINE = re.compile(r"^\s*-\s+`([a-z0-9\-]+)`")
 
