@@ -130,7 +130,8 @@ def parse_card(match: re.Match, is_marine: bool) -> dict:
         "appeal": None,
         "conservation_points": None,
         "strength": None,
-        "reputation_cost": None,
+        "reputation_requirement": None,
+        "reputation_reward": None,
         "money_cost": None,
         "text": "",
         "notes": f"Imported from ssimeonoff ark-nova.html (source #{number_str}). "
