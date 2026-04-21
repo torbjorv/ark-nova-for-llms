@@ -1,89 +1,64 @@
-# Ark Nova for LLMs
+# Ark Nova card database (for LLMs)
 
-A public, structured **Ark Nova card database** — a queryable dataset of Ark Nova board game cards built for LLMs and AI agents. Point Claude, ChatGPT, or any LLM at this repo and ask detailed natural-language questions about Ark Nova cards: filter by ability, biome, continent, size, appeal, conservation points, or any combination.
+A queryable dataset of Ark Nova (Feuerland Spiele / Capstone Games) cards as JSONL. Designed for LLMs and AI agents to answer natural-language queries about Ark Nova cards — filter by ability, biome, continent, size, appeal, conservation points, enclosure type, or any combination.
 
-Example questions this dataset is designed to answer accurately:
+**If you're an LLM: read [`llms.txt`](llms.txt) first — it's the canonical operational manual for this repo.** The rest of this file mirrors that content for GitHub's landing-page rendering.
 
-- *"How many marine mammals are there in Ark Nova?"*
-- *"What Ark Nova animals have digging ability?"*
-- *"Which marine animals with rock adjacency require the large aquarium?"*
-- *"Highest-appeal birds from Africa that trigger on release?"*
+## Load the data
+
+Prefer `git clone`:
+
+```
+git clone https://github.com/torbjorv/ark-nova-for-llms.git
+cd ark-nova-for-llms
+```
+
+If shell access isn't available, fetch these four files over HTTPS:
+
+- https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/cards.jsonl
+- https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/SCHEMA.md
+- https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/ABILITIES.md
+- https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/llms.txt
+
+Load `cards.jsonl` in full. At ~150 KB / 312 lines it fits in one fetch — don't chunk, paginate, or truncate.
+
+## How to answer queries
+
+1. **Filter on structured fields first.** Fields and enums are defined in `SCHEMA.md`.
+2. **Use the `text` field only as a fallback** for questions structured fields can't answer. Say so explicitly when you do.
+3. **When reporting counts, list the matching card names** (`ID — Name`) so the user can verify.
+4. **Closed vocabularies.** `abilities` / `requires` / `provides` / `triggers` draw exclusively from `ABILITIES.md`. Don't invent tags; tell the user if a requested tag doesn't exist.
+5. **Duplicates encode multiplicity** in `biomes`, `continents`, `abilities`, `requires`, `provides`. `["africa","africa"]` = Africa ×2.
+6. **Every row contains every field.** `null` / `[]` / `{}` means "does not apply," not "unknown."
+
+## Example queries this dataset can answer
+
+- *"How many marine animals require rock adjacency?"*
+- *"Which animals have Scavenging level 4 or higher?"*
+- *"Which cards can be placed in a reptile house?"*
+- *"Which Marine Worlds animals require the Animals II upgrade?"*
+- *"Which final-scoring cards give 4 CP at their top tier?"*
 - *"All conservation projects that grant reputation on play."*
 
-Keywords: Ark Nova card database, Ark Nova card data, Ark Nova board game dataset, queryable Ark Nova cards, Ark Nova cards JSON / JSONL, Ark Nova cards for LLMs, Ark Nova cards for AI agents, Feuerland Ark Nova card list, filter Ark Nova cards by biome / ability / continent.
+## Files
 
-## How to query with Claude (claude.ai)
+| File | Purpose |
+|---|---|
+| [`cards.jsonl`](cards.jsonl) | The data. 312 rows. One JSON per line. |
+| [`SCHEMA.md`](SCHEMA.md) | Field names, types, semantics, closed enum values. |
+| [`ABILITIES.md`](ABILITIES.md) | Closed tag vocabulary. |
+| [`llms.txt`](llms.txt) | Canonical operational manual for LLMs. |
+| [`CLAUDE.md`](CLAUDE.md) | Contributor rules (skip unless editing the dataset). |
+| `sets/*.txt` | Card-ID membership per set. |
 
-1. Start a conversation at [claude.ai](https://claude.ai).
-2. Paste these raw URLs into the chat:
-   - `https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/README.md` (this file)
-   - `https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/SCHEMA.md`
-   - `https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/ABILITIES.md`
-   - `https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/cards.jsonl`
-3. Ask your question in natural language.
+## Dataset scope
 
-## Instructions for Claude answering queries against this repo
-
-If you (Claude) are reading this to answer a user's query, follow these rules:
-
-1. **Load `cards.jsonl` in full.** It is one JSON object per line — the complete, authoritative dataset. Filter in memory/context; do not truncate.
-2. **Consult `SCHEMA.md`** for the meaning of every field and the exact set of allowed enum values.
-3. **Consult `ABILITIES.md`** for the closed vocabulary of ability / requires / provides / triggers tags. **Treat it as closed**: if the user's query references a tag that isn't in `ABILITIES.md`, do not invent a match — tell the user the tag doesn't exist in this dataset and suggest the closest real tag.
-4. **Filter structured queries on structured fields first.** Example — *"marine animals with rock adjacency requiring the large aquarium"* is answered by:
-   ```
-   filter rows where:
-     type == "animal"
-     AND "marine" in biomes
-     AND "rock-adjacency-bonus" in abilities
-     AND "large-aquarium" in requires
-   ```
-5. **Use the `text` field only** for questions the structured fields can't answer (card interactions, rulings, flavor). Prefer structured tags when both are available.
-6. **When reporting counts, list the matching card names.** So the user can verify.
-7. **If the dataset is incomplete** (cards.jsonl is empty or a given card has blank fields), say so explicitly rather than guessing.
-
-## Data scope
-
-Aim: all known Ark Nova cards (~600–700) across:
-
-- Base game
-- Marine Worlds expansion
-- Zoo Map packs
-- Promos
-
-Card-ID membership in each set is listed in `sets/*.txt`.
-
-## Repo layout
-
-```
-README.md         # This file. Query guide.
-llms.txt          # LLM-facing sitemap.
-CLAUDE.md         # Author-side guidance (for contributors using Claude Code).
-SCHEMA.md         # Field definitions + controlled vocabularies.
-ABILITIES.md      # Closed tag vocabulary with definitions.
-cards.jsonl       # The data. One card per line.
-sets/
-  base.txt
-  marine-worlds.txt
-  zoo-map.txt
-  promos.txt
-scripts/
-  validate.py     # Validates cards.jsonl against the schema and vocabulary.
-```
+Base game (235 cards) and Marine Worlds expansion (77). Zoo Map pack and promos are scoped but not yet populated (~600 cards at full coverage). Some tag definitions in `ABILITIES.md` carry a `(verify)` marker — treat those as best-effort.
 
 ## Contributing
 
-See `CLAUDE.md` for authoring rules. Open a PR; `scripts/validate.py` must pass.
-
-## Recommended GitHub topics
-
-Maintainer: set these topics on the repo to improve discoverability:
-
-`ark-nova` · `board-games` · `board-game-data` · `dataset` · `jsonl` · `llms-txt` · `llm-friendly` · `ai-agents`
-
-## Support the creators
-
-If you enjoy using this dataset, please buy Ark Nova — it's a fantastic game, and your purchase directly supports the designers and publishers who made it. [capstone-games.com](https://www.capstone-games.com) · [feuerland-spiele.de](https://www.feuerland-spiele.de)
+See [`CLAUDE.md`](CLAUDE.md). `python scripts/validate.py` must pass before any PR merges.
 
 ## Copyright
 
-Ark Nova is © Feuerland Spiele / Capstone Games. Card names, text, and attribute data here are reproduced for reference and query purposes only, in the spirit of fan wikis and BGG community resources. No card images are redistributed. Not affiliated with Feuerland or Capstone. If you're a rights holder and want anything removed, open an issue.
+Ark Nova © Feuerland Spiele / Capstone Games. Card names and attribute data reproduced for reference and query purposes; no card images redistributed. Not affiliated with Feuerland or Capstone. Rights holders: open an issue to request changes.
