@@ -146,43 +146,57 @@ _PZ_RE = re.compile(r"PZ\s*(\d+)", re.IGNORECASE)
 _PAREN_NUM_RE = re.compile(r"\((\d+)\)")
 
 
+ENCLOSURE_SIZE_FIELDS = (
+    "standard_size",
+    "reptile_house_size",
+    "large_bird_aviary_size",
+    "petting_zoo_size",
+    "aquarium_size",
+    "large_reptile_house_size",
+)
+
+
 def parse_enclosure(raw: Any) -> dict:
-    """Return dict with keys: size, biomes, enclosure_type, alt_enclosure_type, alt_enclosure_size."""
-    out = {
+    """Return dict with keys: size, biomes, and the six per-enclosure size fields.
+
+    `size` is the scoring/category size: equal to `standard_size` for land animals
+    and to the parenthesised number for sea animals. Each `*_size` field is set
+    only when the card has that enclosure kind printed; others stay None.
+    """
+    out: dict = {
         "size": None,
         "biomes": [],
-        "enclosure_type": None,
-        "alt_enclosure_type": None,
-        "alt_enclosure_size": None,
     }
+    for f in ENCLOSURE_SIZE_FIELDS:
+        out[f] = None
     if raw is None:
         return out
     s = str(raw).strip()
-
-    # Petting zoo only: "PZ 1"
-    if s.upper().startswith("PZ"):
-        m = _PZ_RE.search(s)
-        out["enclosure_type"] = "petting-zoo"
-        out["size"] = int(m.group(1)) if m else None
+    if not s:
         return out
 
-    # Sea animal with LRH alt: "(4)  Aq 3 / LRH 3"
-    # Sea turtle pattern.
-    if "LRH" in s and "Aq" in s:
+    # Petting zoo: "PZ 1"
+    if s.upper().startswith("PZ"):
+        m = _PZ_RE.search(s)
+        if m:
+            n = int(m.group(1))
+            out["petting_zoo_size"] = n
+            out["size"] = n
+        return out
+
+    # Sea animal: "(N)  Aq M [R]" with optional "/ LRH P" suffix
+    if s.startswith("("):
         pm = _PAREN_NUM_RE.search(s)
         aqm = _AQ_RE.search(s)
         lrhm = _LRH_RE.search(s)
-        out["enclosure_type"] = "aquarium"
-        out["size"] = int(pm.group(1)) if pm else None
-        # aquarium size (M in Aq M) — store as primary `size`? No: spec says size = parenthesised
-        # value (category size). The Aq M goes somewhere — we don't currently have a field for
-        # "aquarium space requirement" distinct from category size. Stash it in alt.
-        out["alt_enclosure_type"] = "large-reptile-house"
-        out["alt_enclosure_size"] = int(lrhm.group(1)) if lrhm else None
+        if pm:
+            out["size"] = int(pm.group(1))
         if aqm:
-            # Bit of a loss here — aquarium-space requirement not separately modelled for
-            # dual-habitat creatures. We currently attach it via reef/marine biome.
-            pass
+            out["aquarium_size"] = int(aqm.group(1))
+            if aqm.group(2):  # trailing 'R'
+                out["biomes"].append("rock")
+        if lrhm:
+            out["large_reptile_house_size"] = int(lrhm.group(1))
         out["biomes"].append("marine")
         return out
 
@@ -191,31 +205,13 @@ def parse_enclosure(raw: Any) -> dict:
         left, right = [p.strip() for p in s.split("/", 1)]
         main = parse_enclosure(left)
         altm = _AQ_RE.search(right)
-        out.update(main)
-        out["alt_enclosure_type"] = "aquarium"
-        out["alt_enclosure_size"] = int(altm.group(1)) if altm else None
+        for f in ENCLOSURE_SIZE_FIELDS:
+            if main[f] is not None:
+                out[f] = main[f]
+        out["size"] = main["size"]
+        if altm:
+            out["aquarium_size"] = int(altm.group(1))
         out["biomes"] = main["biomes"] + ["marine"]
-        return out
-
-    # Sea animal: "(N)  Aq M [R]"
-    if s.startswith("("):
-        pm = _PAREN_NUM_RE.search(s)
-        aqm = _AQ_RE.search(s)
-        out["enclosure_type"] = "aquarium"
-        out["size"] = int(pm.group(1)) if pm else None
-        # The Aq number = aquarium space requirement; store as alt_enclosure_size
-        # on the primary enclosure_type? Cleaner: reuse alt slot as "secondary spec".
-        # But alt is supposed to be a different enclosure *type*. Instead, for
-        # aquarium cards we keep `size` = category size (from parens) and drop the
-        # Aq number into alt_enclosure_size (same enclosure type). We record the
-        # Aq number in alt_enclosure_size only if it differs from size.
-        if aqm:
-            aq = int(aqm.group(1))
-            if aq != out["size"]:
-                out["alt_enclosure_size"] = aq
-        if aqm and aqm.group(2):  # 'R' suffix
-            out["biomes"].append("rock")
-        out["biomes"].append("marine")
         return out
 
     # Land animal with optional (RH N) or (LBA N) alt: e.g. "5W (RH 3)", "4 (LBA 1)", "3R"
@@ -224,12 +220,9 @@ def parse_enclosure(raw: Any) -> dict:
         code = alt_match.group(1)
         alt_n = int(alt_match.group(2))
         if code == "RH":
-            out["alt_enclosure_type"] = "reptile-house"
+            out["reptile_house_size"] = alt_n
         elif code == "LBA":
-            out["alt_enclosure_type"] = "large-bird-aviary"
-        else:
-            out["alt_enclosure_type"] = None
-        out["alt_enclosure_size"] = alt_n
+            out["large_bird_aviary_size"] = alt_n
         head = s[: alt_match.start()].strip()
     else:
         head = s
@@ -237,11 +230,12 @@ def parse_enclosure(raw: Any) -> dict:
     # head is now like "5", "3R", "2RR", "5WR", "4WW"
     m = re.match(r"(\d+)\s*([RW]*)", head)
     if m:
-        out["size"] = int(m.group(1))
+        n = int(m.group(1))
+        out["standard_size"] = n
+        out["size"] = n
         for ch in m.group(2):
             if ch in BIOME_LETTERS:
                 out["biomes"].append(BIOME_LETTERS[ch])
-    out["enclosure_type"] = "standard"
     return out
 
 
@@ -463,7 +457,8 @@ EMPTY = {
     "appeal": None, "conservation_points": None, "strength": None,
     "reputation_requirement": None, "reputation_reward": None, "money_cost": None,
     "text": "", "notes": None,
-    "enclosure_type": None, "alt_enclosure_type": None, "alt_enclosure_size": None,
+    "standard_size": None, "reptile_house_size": None, "large_bird_aviary_size": None,
+    "petting_zoo_size": None, "aquarium_size": None, "large_reptile_house_size": None,
     "reef_ability": None, "wave_icon": False,
     "ability_levels": {}, "ability_targets": {},
     "tier_thresholds": [], "tier_rewards": [],
@@ -555,9 +550,12 @@ def read_animals(ws, backup_by_id: dict) -> list[dict]:
             money_cost=cost if isinstance(cost, int) else None,
             text=text,
             notes=notes,
-            enclosure_type=enc["enclosure_type"],
-            alt_enclosure_type=enc["alt_enclosure_type"],
-            alt_enclosure_size=enc["alt_enclosure_size"],
+            standard_size=enc["standard_size"],
+            reptile_house_size=enc["reptile_house_size"],
+            large_bird_aviary_size=enc["large_bird_aviary_size"],
+            petting_zoo_size=enc["petting_zoo_size"],
+            aquarium_size=enc["aquarium_size"],
+            large_reptile_house_size=enc["large_reptile_house_size"],
             reef_ability=str(reef).strip() if reef else None,
             wave_icon=wave_bool,
             ability_levels=abil_levels,
@@ -881,9 +879,12 @@ def main() -> int:
     for bid, brow in backup_by_id.items():
         if bid not in new_ids:
             # Add with sensible defaults for new fields.
-            brow.setdefault("enclosure_type", None)
-            brow.setdefault("alt_enclosure_type", None)
-            brow.setdefault("alt_enclosure_size", None)
+            brow.setdefault("standard_size", None)
+            brow.setdefault("reptile_house_size", None)
+            brow.setdefault("large_bird_aviary_size", None)
+            brow.setdefault("petting_zoo_size", None)
+            brow.setdefault("aquarium_size", None)
+            brow.setdefault("large_reptile_house_size", None)
             brow.setdefault("reef_ability", None)
             brow.setdefault("wave_icon", False)
             brow.setdefault("ability_levels", {})

@@ -22,7 +22,7 @@ Load `cards.jsonl` **in full**. At ~150 KB / 312 lines it fits in one fetch — 
 
 ## How to answer queries
 
-1. **Filter on structured fields first.** `type`, `set`, `biomes`, `continents`, `size`, `abilities`, `requires`, `provides`, `triggers`, `appeal`, `conservation_points`, `strength`, `reputation_requirement`, `reputation_reward`, `money_cost`, `enclosure_type`, `alt_enclosure_type`, `reef_ability`, `wave_icon`, `ability_levels`, `ability_targets`, `tier_thresholds`, `tier_rewards`. All are defined in `SCHEMA.md`.
+1. **Filter on structured fields first.** `type`, `set`, `biomes`, `continents`, `size`, `abilities`, `requires`, `provides`, `triggers`, `appeal`, `conservation_points`, `strength`, `reputation_requirement`, `reputation_reward`, `money_cost`, `standard_size`, `reptile_house_size`, `large_bird_aviary_size`, `petting_zoo_size`, `aquarium_size`, `large_reptile_house_size`, `reef_ability`, `wave_icon`, `ability_levels`, `ability_targets`, `tier_thresholds`, `tier_rewards`. All are defined in `SCHEMA.md`. To find animals placeable in a given enclosure kind, filter on the matching `*_size` field being non-null.
 2. **Use the `text` field only as a fallback** for questions structured fields can't answer (rulings, card-interaction flavor). Say so explicitly when you do.
 3. **When reporting counts, list the matching card names** (`ID — Name`) so the user can verify.
 4. **Closed vocabularies.** `abilities`, `requires`, `provides`, and `triggers` draw exclusively from `ABILITIES.md`. If a user references a tag not in that file, tell them the tag doesn't exist in this dataset and suggest the closest real one — **do not invent tags**.

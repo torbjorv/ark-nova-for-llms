@@ -33,9 +33,12 @@ REQUIRED_FIELDS = {
     "money_cost": (int, type(None)),
     "text": str,
     "notes": (str, type(None)),
-    "enclosure_type": (str, type(None)),
-    "alt_enclosure_type": (str, type(None)),
-    "alt_enclosure_size": (int, type(None)),
+    "standard_size": (int, type(None)),
+    "reptile_house_size": (int, type(None)),
+    "large_bird_aviary_size": (int, type(None)),
+    "petting_zoo_size": (int, type(None)),
+    "aquarium_size": (int, type(None)),
+    "large_reptile_house_size": (int, type(None)),
     "reef_ability": (str, type(None)),
     "wave_icon": bool,
     "ability_levels": dict,
@@ -48,11 +51,6 @@ SET_ENUM = {"base", "marine-worlds", "zoo-map", "promos"}
 TYPE_ENUM = {"animal", "sponsor", "conservation-project", "zoo-map", "final-scoring", "other"}
 BIOME_ENUM = {"rock", "water", "marine"}
 CONTINENT_ENUM = {"africa", "americas", "asia", "europe", "australia"}
-ENCLOSURE_ENUM = {
-    "standard", "reptile-house", "large-bird-aviary",
-    "petting-zoo", "aquarium", "large-reptile-house",
-}
-
 TAG_LINE = re.compile(r"^\s*-\s+`([a-z0-9\-]+)`")
 
 
@@ -93,11 +91,6 @@ def check_row(row: dict, lineno: int, valid_tags: set[str]) -> list[str]:
         for tag in row.get(tag_field, []) or []:
             if tag not in valid_tags:
                 errors.append(f"{prefix}: `{tag_field}` tag `{tag}` not defined in ABILITIES.md")
-
-    for k in ("enclosure_type", "alt_enclosure_type"):
-        v = row.get(k)
-        if v is not None and v not in ENCLOSURE_ENUM:
-            errors.append(f"{prefix}: invalid `{k}` value `{v}`")
 
     abilities = row.get("abilities") or []
     for ab_field in ("ability_levels", "ability_targets"):

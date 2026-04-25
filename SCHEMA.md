@@ -12,7 +12,7 @@ Every row in `cards.jsonl` is a single JSON object with **every** field below pr
 | `type` | enum | yes | One of `type` enum below. |
 | `biomes` | array of enum | yes | Zero or more from `biomes` enum. **Duplicates encode multiplicity** — `["water","water"]` = two water-habitat icons (`2W`). `[]` if the card has no biome. |
 | `continents` | array of enum | yes | Zero or more from `continents` enum. **Duplicates encode multiplicity** — `["africa","africa"]` = Africa ×2. `[]` if none. |
-| `size` | integer or null | yes | Primary enclosure size (1–5). For sea animals, this is the animal's *category size* (the number in parentheses on the card, used to classify it as small / large for scoring); `aquarium_size` holds the actual aquarium space requirement. `null` for non-animal cards. |
+| `size` | integer or null | yes | Scoring / category size (1–5). For land animals this equals `standard_size`. For sea animals this is the *category size* — the number in parentheses on the card, used by size-tier scoring — which is distinct from `aquarium_size`. `null` for non-animal cards. |
 | `abilities` | array of tag | yes | Tags from `ABILITIES.md`. **Duplicates encode multiplicity** — `["predator","predator"]` = Predator ×2. `[]` if none. |
 | `requires` | array of tag | yes | Prerequisite tags from `ABILITIES.md` (enclosure, adjacency, other prereqs). Duplicates allowed. `[]` if none. |
 | `provides` | array of tag | yes | Effect tags from `ABILITIES.md` (icons / effects a sponsor or card grants when played). Duplicates allowed. `[]` if none. |
@@ -25,9 +25,12 @@ Every row in `cards.jsonl` is a single JSON object with **every** field below pr
 | `money_cost` | integer or null | yes | Money cost to play. `null` if free / non-playable. |
 | `text` | string | yes | Full verbatim card text. Empty string `""` if the card has no effect text. |
 | `notes` | string or null | yes | Optional rulings / clarifications / FAQ references. `null` if none. |
-| `enclosure_type` | enum or null | yes | Primary enclosure type from `enclosure_type` enum. `null` for non-animal cards. |
-| `alt_enclosure_type` | enum or null | yes | Alternative enclosure type if the card can be placed in either of two enclosure kinds (e.g. reptiles that accept a reptile-house). From `enclosure_type` enum. `null` if no alternative. |
-| `alt_enclosure_size` | integer or null | yes | Size requirement in the alternative enclosure. `null` if no alternative. |
+| `standard_size` | integer or null | yes | Space requirement in a standard enclosure. `null` if the animal cannot be placed in a standard enclosure. |
+| `reptile_house_size` | integer or null | yes | Space requirement in a small reptile house (`RH N` on reptile cards). `null` if not applicable. |
+| `large_bird_aviary_size` | integer or null | yes | Space requirement in a large bird aviary (`LBA N` on bird cards). `null` if not applicable. |
+| `petting_zoo_size` | integer or null | yes | Space requirement in the petting zoo (`PZ N`). `null` if not applicable. |
+| `aquarium_size` | integer or null | yes | Space requirement in an aquarium (`Aq N`). `null` if not applicable. |
+| `large_reptile_house_size` | integer or null | yes | Space requirement in a large reptile house (`LRH N`). `null` if not applicable. Used by sea turtles, which accept aquarium *or* large-reptile-house. |
 | `reef_ability` | string or null | yes | Verbatim reef-ability payoff shorthand (e.g. `"DRAW CARD"`, `"KIOSK/PAV"`, `"SA 1"`). `null` for cards without a reef ability. |
 | `wave_icon` | boolean | yes | `true` if the card carries the wave icon (Marine Worlds trigger). `false` otherwise. |
 | `ability_levels` | object | yes | Map of `tag → integer` recording the printed level for level-bearing abilities (e.g. `{"hunter": 4}` for Hunter 4). Keys must also appear in `abilities`. `{}` if none. |
@@ -62,18 +65,6 @@ Ark Nova has five continent icons. Use `[]` for cards with no continent attribut
 africa | americas | asia | europe | australia
 ```
 
-### `enclosure_type`
-Where the animal lives in the zoo. `null` for non-animal cards.
-```
-standard | reptile-house | large-bird-aviary | petting-zoo | aquarium | large-reptile-house
-```
-- `standard` — any standard enclosure of the given size.
-- `reptile-house` — small reptile house (the `RH N` notation on reptile cards).
-- `large-bird-aviary` — aviary (the `LBA N` notation on bird cards).
-- `petting-zoo` — petting-zoo special enclosure (the `PZ N` notation on pet cards).
-- `aquarium` — aquarium (the `Aq N` notation on sea-animal cards). Marine-Worlds.
-- `large-reptile-house` — large reptile house alternative for sea turtles (`LRH N`).
-
 ## Tag fields
 
 `abilities`, `requires`, `provides`, `triggers` each draw from the closed vocabulary in `ABILITIES.md`. Each tag must be defined there before it can appear in a row. The validator enforces this.
@@ -103,9 +94,12 @@ standard | reptile-house | large-bird-aviary | petting-zoo | aquarium | large-re
   "money_cost": 22,
   "text": "(verbatim card text)",
   "notes": null,
-  "enclosure_type": "standard",
-  "alt_enclosure_type": null,
-  "alt_enclosure_size": null,
+  "standard_size": 5,
+  "reptile_house_size": null,
+  "large_bird_aviary_size": null,
+  "petting_zoo_size": null,
+  "aquarium_size": null,
+  "large_reptile_house_size": null,
   "reef_ability": null,
   "wave_icon": false,
   "ability_levels": {},
@@ -129,9 +123,12 @@ standard | reptile-house | large-bird-aviary | petting-zoo | aquarium | large-re
   "requires": ["lizard", "lizard", "lizard"],
   "ability_levels": {"snapping": 2},
   "ability_targets": {},
-  "enclosure_type": "standard",
-  "alt_enclosure_type": "reptile-house",
-  "alt_enclosure_size": 3,
+  "standard_size": 5,
+  "reptile_house_size": 3,
+  "large_bird_aviary_size": null,
+  "petting_zoo_size": null,
+  "aquarium_size": null,
+  "large_reptile_house_size": null,
   "reef_ability": null,
   "wave_icon": false
 }
@@ -149,9 +146,12 @@ standard | reptile-house | large-bird-aviary | petting-zoo | aquarium | large-re
   "size": 2,
   "abilities": ["marine", "posturing"],
   "ability_levels": {"posturing": 1},
-  "enclosure_type": "aquarium",
-  "alt_enclosure_type": null,
-  "alt_enclosure_size": null,
+  "standard_size": null,
+  "reptile_house_size": null,
+  "large_bird_aviary_size": null,
+  "petting_zoo_size": null,
+  "aquarium_size": 1,
+  "large_reptile_house_size": null,
   "reef_ability": "KIOSK/PAV",
   "wave_icon": true
 }
@@ -177,6 +177,6 @@ standard | reptile-house | large-bird-aviary | petting-zoo | aquarium | large-re
 
 1. **If a user might filter on it, it's a structured field or tag — not prose.** When a card has a mechanic that isn't yet captured structurally, extend the schema or add a tag, then re-tag affected rows.
 2. **Tag vocabularies are closed.** Adding a tag means editing `ABILITIES.md` first.
-3. **Enums are closed too.** Don't sneak a new `type`, `biome`, or `enclosure_type` into a row without adding it here.
+3. **Enums are closed too.** Don't sneak a new `type` or `biome` into a row without adding it here.
 4. **Nulls over omissions.** Every field is always present.
 5. **Duplicates encode multiplicity** in `biomes`, `continents`, `abilities`, `requires`, and `provides`. Don't collapse them.
