@@ -42,7 +42,7 @@ NEW_SIZE_FIELDS = (
 # Canonical field order in the output JSONL — same as existing cards.jsonl,
 # with the 3 old enclosure fields replaced in place by the 6 new size fields.
 FIELD_ORDER = (
-    "biomes", "continents", "size",
+    "rock_icons", "water_icons", "continents", "size",
     "abilities", "requires", "provides", "triggers",
     "appeal", "conservation_points", "strength",
     "reputation_requirement", "reputation_reward", "money_cost",

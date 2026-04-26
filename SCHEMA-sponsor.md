@@ -1,0 +1,137 @@
+# Sponsor schema
+
+Schema for cards with `"type": "sponsor"`. **87 cards** in the dataset (base + Marine Worlds).
+
+Sponsors are non-animal cards played for their effects. Each sponsor has a printed strength / level (the gating rule for which sponsors a player may play, controlled by their sponsor card on the action board) and an effect described in `text`. Effects decompose into `provides` icons and `triggers`.
+
+Read [SCHEMA.md](./SCHEMA.md) first for the global enums, the closed-vocabulary rule for tag fields, and the "every row contains every field" invariant.
+
+## Fields
+
+### Identity & common
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Stable unique ID. |
+| `name` | string | Card name as printed. |
+| `set` | enum | One of the global `set` enum. |
+| `type` | const | Always `"sponsor"` for cards in this schema. |
+| `text` | string | Full verbatim card text. `""` only for trivial cases. |
+| `notes` | string or null | Currently always `null` for sponsors; reserved for rulings / FAQ refs. |
+
+### Strength
+
+| Field | Type | Description |
+|---|---|---|
+| `strength` | integer or null | Sponsor strength / level. The player's current sponsor card sets the maximum strength they may play. `null` only if a sponsor genuinely has no printed strength (none in the current dataset; reserved for future cards). |
+
+### Tags
+
+`abilities`, `requires`, `provides`, `triggers` all draw exclusively from `ABILITIES.md`.
+
+| Field | Type | Description |
+|---|---|---|
+| `abilities` | array of tag | Category tags on the card itself (e.g. `["science"]` for the science-lab sponsor). **Duplicates encode multiplicity.** `[]` if none. |
+| `requires` | array of tag | Prereq tags — most commonly `level-ii-sponsor` / `level-iii-sponsor` gating tags, or named-icon prereqs. Duplicates allowed. `[]` if no prerequisites. |
+| `provides` | array of tag | Icons / effects the sponsor *grants* when played. **This is the sponsor-specific field.** Duplicates encode multiplicity. `[]` if the sponsor's effect is purely procedural (not modelled as a discrete icon-grant). |
+| `triggers` | array of tag | When the effect fires — typically a subset of `immediate`, `ongoing`, `end`, plus reactive triggers (e.g. `on-play-animal`). Duplicates allowed. `[]` if the sponsor has no fire-time semantics modelled. |
+
+### Marine Worlds wave-trigger sponsors
+
+A small number of Marine Worlds sponsors carry the wave icon:
+
+| Field | Type | Description |
+|---|---|---|
+| `wave_icon` | boolean | `true` for Marine Worlds wave-trigger sponsors (4 cards in the current dataset). `false` otherwise. |
+
+### Reputation reward (rare)
+
+| Field | Type | Description |
+|---|---|---|
+| `reputation_reward` | integer or null | Reputation gained on play. `null` for almost all sponsors; populated only for the rare sponsor that grants reputation directly on play. |
+
+## Always null/empty for sponsors
+
+These fields are part of every row but are **constant** on sponsor cards:
+
+| Field | Constant | Used by |
+|---|---|---|
+| `rock_icons` | `0` | animal |
+| `water_icons` | `0` | animal |
+| `continents` | `[]` | animal |
+| `size` | `null` | animal |
+| `appeal` | `null` | animal |
+| `conservation_points` | `null` | animal |
+| `reputation_requirement` | `null` | animal |
+| `money_cost` | `null` | animal (sponsors are paid for via the sponsor action's cost track, not a per-card money cost) |
+| `standard_size`, `reptile_house_size`, `large_bird_aviary_size`, `petting_zoo_size`, `aquarium_size`, `large_reptile_house_size` | `null` | animal (sponsors aren't placed in enclosures) |
+| `reef_ability` | `null` | animal |
+| `ability_levels` | `{}` | animal |
+| `ability_targets` | `{}` | animal |
+| `tier_thresholds` | `[]` | conservation-project, final-scoring |
+| `tier_rewards` | `[]` | conservation-project, final-scoring |
+
+## Examples
+
+### Activated sponsor — Science Lab (`AN-201`)
+
+Has all three trigger phases (immediate, ongoing, end), a level-II prereq, and provides a science icon:
+
+```json
+{
+  "id": "AN-201",
+  "name": "Science Lab",
+  "set": "base",
+  "type": "sponsor",
+  "rock_icons": 0,
+  "water_icons": 0,
+  "continents": [],
+  "size": null,
+  "abilities": ["science"],
+  "requires": ["level-ii-sponsor"],
+  "provides": ["science"],
+  "triggers": ["immediate", "ongoing", "end"],
+  "appeal": null,
+  "conservation_points": null,
+  "strength": 5,
+  "reputation_requirement": null,
+  "reputation_reward": null,
+  "money_cost": null,
+  "text": "Take 1 card from the deck or in reputation range. / Take 1 card from the deck or in reputation range. / Gain 1 CP / 2 CP for 3 / 6 research icons.",
+  "notes": null,
+  "standard_size": null,
+  "reptile_house_size": null,
+  "large_bird_aviary_size": null,
+  "petting_zoo_size": null,
+  "aquarium_size": null,
+  "large_reptile_house_size": null,
+  "reef_ability": null,
+  "wave_icon": false,
+  "ability_levels": {},
+  "ability_targets": {},
+  "tier_thresholds": [],
+  "tier_rewards": []
+}
+```
+
+### Reactive sponsor — Spokesperson (`AN-202`)
+
+Ongoing-only trigger (fires whenever a research icon is played):
+
+```json
+{
+  "id": "AN-202",
+  "name": "Spokesperson",
+  "set": "base",
+  "type": "sponsor",
+  "abilities": ["science"],
+  "requires": [],
+  "provides": ["science"],
+  "triggers": ["ongoing"],
+  "strength": 5,
+  "text": "Each time you play a research icon into your zoo, gain 1 reputation .",
+  "...": "(remaining fields null/empty as per the schema)"
+}
+```
+
+*(Example 2 is abbreviated. Real rows include every field — see Science Lab above for the full layout.)*

@@ -58,12 +58,12 @@ CONTINENT_TOKENS = {
     "australia": "australia",
 }
 
-# Habitat / terrain group tokens. Treated as biomes in the output schema because
-# they describe where the animal lives / what enclosure it needs.
-BIOME_TOKENS = {
-    "rock": "rock",
-    "water": "water",
-    "marine": "marine",
+# Enclosure-requirement icon tokens. Each token contributes one to the matching
+# integer-count field on the output card. `marine` is NOT here — Sea Animal is
+# an animal type, captured via the `marine` ability tag below.
+ICON_COUNT_TOKENS = {
+    "rock": "rock_icons",
+    "water": "water_icons",
 }
 
 SIZE_TOKENS = {f"size{i}": i for i in range(1, 6)}
@@ -71,7 +71,7 @@ SIZE_TOKENS = {f"size{i}": i for i in range(1, 6)}
 # "base" appears on standard-project cards and means base-set. Handled via the
 # set logic, not as an ability.
 NON_ABILITY_TOKENS = {"base"} | TYPE_TOKENS.keys() | CONTINENT_TOKENS.keys() \
-                    | BIOME_TOKENS.keys() | SIZE_TOKENS.keys()
+                    | ICON_COUNT_TOKENS.keys() | SIZE_TOKENS.keys()
 
 
 def walk_markers(html: str):
@@ -93,7 +93,8 @@ def parse_card(match: re.Match, is_marine: bool) -> dict:
 
     card_type = "other"
     continents: list[str] = []
-    biomes: list[str] = []
+    rock_icons = 0
+    water_icons = 0
     size = None
     abilities: list[str] = []
 
@@ -102,8 +103,11 @@ def parse_card(match: re.Match, is_marine: bool) -> dict:
             card_type = TYPE_TOKENS[t]
         elif t in CONTINENT_TOKENS:
             continents.append(CONTINENT_TOKENS[t])
-        elif t in BIOME_TOKENS:
-            biomes.append(BIOME_TOKENS[t])
+        elif t in ICON_COUNT_TOKENS:
+            if ICON_COUNT_TOKENS[t] == "rock_icons":
+                rock_icons += 1
+            else:
+                water_icons += 1
         elif t in SIZE_TOKENS:
             size = SIZE_TOKENS[t]
         elif t == "base":
@@ -120,7 +124,8 @@ def parse_card(match: re.Match, is_marine: bool) -> dict:
         "name": name.strip(),
         "set": card_set,
         "type": card_type,
-        "biomes": sorted(set(biomes)),
+        "rock_icons": rock_icons,
+        "water_icons": water_icons,
         "continents": sorted(set(continents)),
         "size": size,
         "abilities": sorted(set(abilities)),

@@ -1,6 +1,6 @@
 # Ark Nova card database (for LLMs)
 
-A queryable dataset of Ark Nova (Feuerland Spiele / Capstone Games) cards as JSONL. Designed for LLMs and AI agents to answer natural-language queries about Ark Nova cards — filter by ability, biome, continent, size, appeal, conservation points, enclosure space requirements, or any combination.
+A queryable dataset of Ark Nova (Feuerland Spiele / Capstone Games) cards as JSONL. Designed for LLMs and AI agents to answer natural-language queries about Ark Nova cards — filter by ability, continent, rock/water requirement, size, appeal, conservation points, enclosure space, or any combination.
 
 **If you're an LLM: read [`llms.txt`](llms.txt) first — it's the canonical operational manual for this repo.** The rest of this file mirrors that content for GitHub's landing-page rendering.
 
@@ -24,11 +24,11 @@ Load `cards.jsonl` in full. At ~150 KB / 312 lines it fits in one fetch — don'
 
 ## How to answer queries
 
-1. **Filter on structured fields first.** Fields and enums are defined in `SCHEMA.md`.
+1. **Filter on structured fields first.** Field semantics live in the per-type schema (`SCHEMA-animal.md`, `SCHEMA-sponsor.md`, `SCHEMA-conservation-project.md`, `SCHEMA-final-scoring.md`); global enums and design rules live in `SCHEMA.md`.
 2. **Use the `text` field only as a fallback** for questions structured fields can't answer. Say so explicitly when you do.
 3. **When reporting counts, list the matching card names** (`ID — Name`) so the user can verify.
 4. **Closed vocabularies.** `abilities` / `requires` / `provides` / `triggers` draw exclusively from `ABILITIES.md`. Don't invent tags; tell the user if a requested tag doesn't exist.
-5. **Duplicates encode multiplicity** in `biomes`, `continents`, `abilities`, `requires`, `provides`. `["africa","africa"]` = Africa ×2.
+5. **Duplicates encode multiplicity** in `continents`, `abilities`, `requires`, `provides`. `["africa","africa"]` = Africa ×2. (Rock / water icon counts are integer fields: `rock_icons`, `water_icons`.)
 6. **Every row contains every field.** `null` / `[]` / `{}` means "does not apply," not "unknown."
 
 ## Example queries this dataset can answer
@@ -45,7 +45,8 @@ Load `cards.jsonl` in full. At ~150 KB / 312 lines it fits in one fetch — don'
 | File | Purpose |
 |---|---|
 | [`cards.jsonl`](cards.jsonl) | The data. 312 rows. One JSON per line. |
-| [`SCHEMA.md`](SCHEMA.md) | Field names, types, semantics, closed enum values. |
+| [`SCHEMA.md`](SCHEMA.md) | Index of per-type schemas, plus global enums and design rules. |
+| [`SCHEMA-animal.md`](SCHEMA-animal.md), [`SCHEMA-sponsor.md`](SCHEMA-sponsor.md), [`SCHEMA-conservation-project.md`](SCHEMA-conservation-project.md), [`SCHEMA-final-scoring.md`](SCHEMA-final-scoring.md) | Per-type field semantics. Each is a self-contained contract for one card type. |
 | [`ABILITIES.md`](ABILITIES.md) | Closed tag vocabulary. |
 | [`llms.txt`](llms.txt) | Canonical operational manual for LLMs. |
 | [`CLAUDE.md`](CLAUDE.md) | Contributor rules (skip unless editing the dataset). |

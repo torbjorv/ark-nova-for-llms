@@ -18,12 +18,12 @@ Used in `abilities` to record a continent icon on the card, and in `requires` / 
 - `europe` — Europe continent icon.
 - `australia` — Australia continent icon.
 
-## Biome icons
+## Enclosure-requirement icons
 
-Used in `requires` / `provides` for rock- or water-icon thresholds printed on sponsor cards and elsewhere.
+Used in `requires` / `provides` for rock- or water-icon thresholds printed on sponsor cards and elsewhere. **Per-animal-card icon counts live in the structured `rock_icons` / `water_icons` fields, not here** — these tags are for sponsor / project effects that *reference* those icons (e.g. "gain 1 CP per 6 water icons in your zoo").
 
-- `water` — water habitat icon (see also the `biomes` field on the card).
-- `rock` — rock habitat icon.
+- `water` — water-requirement icon.
+- `rock` — rock-requirement icon.
 
 ## Animal group icons
 

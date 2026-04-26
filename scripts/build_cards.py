@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
-"""Build cards.jsonl from the authoritative spreadsheet + old-file text.
+"""Build cards.jsonl from the authoritative spreadsheet.
 
 Reads:
   source_data/arknovaanimals_VM_v2.xlsx  — structured card data
-  source_data/cards.jsonl.bak            — previous cards.jsonl, for `text` and `notes`
 
 Writes:
   cards.jsonl — one JSON object per line, every schema field present.
 
 Run with: python scripts/build_cards.py
+
+Note: this rebuild does not preserve hand-written `text` / `notes` from the
+existing cards.jsonl. Animal text is derived from the spreadsheet ability
+column where possible; sponsor / project / final-scoring text is assembled
+from the spreadsheet's effect columns. Cards that exist only in the
+ssimeonoff or Ender-Wiggin imports (not in the spreadsheet) won't appear
+in the output — re-run those imports separately if needed.
 """
 from __future__ import annotations
 
@@ -22,10 +28,9 @@ import openpyxl
 
 REPO = Path(__file__).resolve().parent.parent
 XLSX = REPO / "source_data" / "arknovaanimals_VM_v2.xlsx"
-BACKUP = REPO / "source_data" / "cards.jsonl.bak"
 OUT = REPO / "cards.jsonl"
 
-BIOME_LETTERS = {"R": "rock", "W": "water"}
+ENCLOSURE_ICON_LETTERS = {"R": "rock_icons", "W": "water_icons"}
 
 # Maps Type-column tokens → (animal-icon ability tag, animal-icon count)
 TYPE_TOKEN_TO_TAG = {
@@ -157,15 +162,18 @@ ENCLOSURE_SIZE_FIELDS = (
 
 
 def parse_enclosure(raw: Any) -> dict:
-    """Return dict with keys: size, biomes, and the six per-enclosure size fields.
+    """Return dict with keys: size, rock_icons, water_icons, and the six per-enclosure size fields.
 
     `size` is the scoring/category size: equal to `standard_size` for land animals
     and to the parenthesised number for sea animals. Each `*_size` field is set
     only when the card has that enclosure kind printed; others stay None.
+    `rock_icons` / `water_icons` are integer counts of those enclosure-requirement
+    icons printed on the card.
     """
     out: dict = {
         "size": None,
-        "biomes": [],
+        "rock_icons": 0,
+        "water_icons": 0,
     }
     for f in ENCLOSURE_SIZE_FIELDS:
         out[f] = None
@@ -194,10 +202,9 @@ def parse_enclosure(raw: Any) -> dict:
         if aqm:
             out["aquarium_size"] = int(aqm.group(1))
             if aqm.group(2):  # trailing 'R'
-                out["biomes"].append("rock")
+                out["rock_icons"] += 1
         if lrhm:
             out["large_reptile_house_size"] = int(lrhm.group(1))
-        out["biomes"].append("marine")
         return out
 
     # Penguin-style dual enclosure: "3RW / Aq 2"
@@ -211,7 +218,8 @@ def parse_enclosure(raw: Any) -> dict:
         out["size"] = main["size"]
         if altm:
             out["aquarium_size"] = int(altm.group(1))
-        out["biomes"] = main["biomes"] + ["marine"]
+        out["rock_icons"] = main["rock_icons"]
+        out["water_icons"] = main["water_icons"]
         return out
 
     # Land animal with optional (RH N) or (LBA N) alt: e.g. "5W (RH 3)", "4 (LBA 1)", "3R"
@@ -234,8 +242,8 @@ def parse_enclosure(raw: Any) -> dict:
         out["standard_size"] = n
         out["size"] = n
         for ch in m.group(2):
-            if ch in BIOME_LETTERS:
-                out["biomes"].append(BIOME_LETTERS[ch])
+            if ch in ENCLOSURE_ICON_LETTERS:
+                out[ENCLOSURE_ICON_LETTERS[ch]] += 1
     return out
 
 
@@ -452,7 +460,7 @@ def parse_bonuses(raw: Any) -> tuple[int | None, int | None, int | None]:
 # ---------------------------------------------------------------------------
 
 EMPTY = {
-    "biomes": [], "continents": [], "size": None,
+    "rock_icons": 0, "water_icons": 0, "continents": [], "size": None,
     "abilities": [], "requires": [], "provides": [], "triggers": [],
     "appeal": None, "conservation_points": None, "strength": None,
     "reputation_requirement": None, "reputation_reward": None, "money_cost": None,
@@ -487,7 +495,7 @@ def _titlecase(name: str) -> str:
 # Sheet readers
 # ---------------------------------------------------------------------------
 
-def read_animals(ws, backup_by_id: dict) -> list[dict]:
+def read_animals(ws) -> list[dict]:
     rows = list(ws.iter_rows(values_only=True))
     cards = []
     for row in rows[1:]:
@@ -526,17 +534,15 @@ def read_animals(ws, backup_by_id: dict) -> list[dict]:
         wave_bool = bool(wave)
 
         notes = f"Latin: {latin}" if latin else None
-        backup = backup_by_id.get(cid)
-        text = backup["text"] if backup else ""
-        if backup and backup.get("notes"):
-            notes = backup["notes"] if notes is None else f"{notes}. {backup['notes']}"
+        text = ""
 
         card = new_card(
             id=cid,
             name=_titlecase(name_raw),
             set=set_name,
             type="animal",
-            biomes=enc["biomes"],
+            rock_icons=enc["rock_icons"],
+            water_icons=enc["water_icons"],
             continents=continents,
             size=enc["size"],
             abilities=abilities,
@@ -565,7 +571,7 @@ def read_animals(ws, backup_by_id: dict) -> list[dict]:
     return cards
 
 
-def read_sponsors(ws, backup_by_id: dict) -> list[dict]:
+def read_sponsors(ws) -> list[dict]:
     rows = list(ws.iter_rows(values_only=True))
     cards = []
     for row in rows[1:]:
@@ -612,10 +618,7 @@ def read_sponsors(ws, backup_by_id: dict) -> list[dict]:
         # Text assembled from instant/ongoing/endgame segments
         parts = [str(x).strip() for x in (instant, ongoing, endgame) if x]
         text = " / ".join(parts) if parts else ""
-        backup = backup_by_id.get(cid)
-        if backup and backup.get("text"):
-            text = backup["text"]
-        notes = backup["notes"] if backup else None
+        notes = None
 
         abilities: list[str] = []
         # Tag science/research sponsors with `science` ability when they produce Research icons.
@@ -682,7 +685,7 @@ def parse_provides(raw: Any) -> list[str]:
     return provides
 
 
-def read_conservation(ws, backup_by_id: dict) -> list[dict]:
+def read_conservation(ws) -> list[dict]:
     rows = list(ws.iter_rows(values_only=True))
     cards = []
     for row in rows[1:]:
@@ -745,9 +748,8 @@ def read_conservation(ws, backup_by_id: dict) -> list[dict]:
             set_name = "base"
         cid = f"{prefix}-{num:03d}"
 
-        backup = backup_by_id.get(cid)
-        text = (backup or {}).get("text") or (requirements_text or "")
-        notes = (backup or {}).get("notes")
+        text = requirements_text or ""
+        notes = None
 
         card = new_card(
             id=cid,
@@ -808,7 +810,7 @@ def parse_tier(raw: Any) -> list[int]:
     return [int(x) for x in m] if m else []
 
 
-def read_final_scoring(ws, backup_by_id: dict) -> list[dict]:
+def read_final_scoring(ws) -> list[dict]:
     rows = list(ws.iter_rows(values_only=True))
     cards = []
     for row in rows[1:]:
@@ -830,9 +832,8 @@ def read_final_scoring(ws, backup_by_id: dict) -> list[dict]:
         set_name = "marine-worlds" if is_mw else "base"
         cid = f"{prefix}-{num:03d}"
 
-        backup = backup_by_id.get(cid)
-        text = (backup or {}).get("text") or (text_raw or "")
-        notes = (backup or {}).get("notes") or (extra if extra else None)
+        text = text_raw or ""
+        notes = extra if extra else None
 
         card = new_card(
             id=cid,
@@ -857,41 +858,13 @@ def main() -> int:
         print(f"ERROR: {XLSX} not found", file=sys.stderr)
         return 2
 
-    backup_by_id: dict[str, dict] = {}
-    if BACKUP.exists():
-        with BACKUP.open() as f:
-            for line in f:
-                if line.strip():
-                    row = json.loads(line)
-                    backup_by_id[row["id"]] = row
-
     wb = openpyxl.load_workbook(XLSX, data_only=True)
 
     all_cards: list[dict] = []
-    all_cards += read_final_scoring(wb["Final Scoring"], backup_by_id)
-    all_cards += read_conservation(wb["Conservation"], backup_by_id)
-    all_cards += read_sponsors(wb["Sponsors"], backup_by_id)
-    all_cards += read_animals(wb["Animals"], backup_by_id)
-
-    # Also include backup-only rows for base versions of MW-replaced cards
-    # (where the spreadsheet only holds the MW replacement).
-    new_ids = {c["id"] for c in all_cards}
-    for bid, brow in backup_by_id.items():
-        if bid not in new_ids:
-            # Add with sensible defaults for new fields.
-            brow.setdefault("standard_size", None)
-            brow.setdefault("reptile_house_size", None)
-            brow.setdefault("large_bird_aviary_size", None)
-            brow.setdefault("petting_zoo_size", None)
-            brow.setdefault("aquarium_size", None)
-            brow.setdefault("large_reptile_house_size", None)
-            brow.setdefault("reef_ability", None)
-            brow.setdefault("wave_icon", False)
-            brow.setdefault("ability_levels", {})
-            brow.setdefault("ability_targets", {})
-            brow.setdefault("tier_thresholds", [])
-            brow.setdefault("tier_rewards", [])
-            all_cards.append(brow)
+    all_cards += read_final_scoring(wb["Final Scoring"])
+    all_cards += read_conservation(wb["Conservation"])
+    all_cards += read_sponsors(wb["Sponsors"])
+    all_cards += read_animals(wb["Animals"])
 
     all_cards.sort(key=lambda c: (c["type"], c["id"]))
 

@@ -11,28 +11,31 @@ git clone https://github.com/torbjorv/ark-nova-for-llms.git
 cd ark-nova-for-llms
 ```
 
-If shell access isn't available, fetch these four files over HTTPS:
+If shell access isn't available, fetch these files over HTTPS:
 
 - https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/cards.jsonl
 - https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/SCHEMA.md
 - https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/ABILITIES.md
 - https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/llms.txt
 
+`SCHEMA.md` links to four per-type schemas (`SCHEMA-animal.md`, `SCHEMA-sponsor.md`, `SCHEMA-conservation-project.md`, `SCHEMA-final-scoring.md`). Fetch only the per-type schema for the card type the user is asking about — you don't need all four.
+
 Load `cards.jsonl` **in full**. At ~150 KB / 312 lines it fits in one fetch — don't chunk, paginate, or truncate. If your fetch tool truncates, raise its token limit rather than working with a partial file.
 
 ## How to answer queries
 
-1. **Filter on structured fields first.** `type`, `set`, `biomes`, `continents`, `size`, `abilities`, `requires`, `provides`, `triggers`, `appeal`, `conservation_points`, `strength`, `reputation_requirement`, `reputation_reward`, `money_cost`, `standard_size`, `reptile_house_size`, `large_bird_aviary_size`, `petting_zoo_size`, `aquarium_size`, `large_reptile_house_size`, `reef_ability`, `wave_icon`, `ability_levels`, `ability_targets`, `tier_thresholds`, `tier_rewards`. All are defined in `SCHEMA.md`. To find animals placeable in a given enclosure kind, filter on the matching `*_size` field being non-null.
+1. **Filter on structured fields first.** `type`, `set`, `rock_icons`, `water_icons`, `continents`, `size`, `abilities`, `requires`, `provides`, `triggers`, `appeal`, `conservation_points`, `strength`, `reputation_requirement`, `reputation_reward`, `money_cost`, `standard_size`, `reptile_house_size`, `large_bird_aviary_size`, `petting_zoo_size`, `aquarium_size`, `large_reptile_house_size`, `reef_ability`, `wave_icon`, `ability_levels`, `ability_targets`, `tier_thresholds`, `tier_rewards`. Field semantics live in the per-type schema (`SCHEMA-animal.md` etc.); global enums and design rules live in `SCHEMA.md`. To find animals placeable in a given enclosure kind, filter on the matching `*_size` field being non-null. Sea Animals are an animal *type* (filter on the `marine` ability tag and/or `aquarium_size` being non-null), not a rock/water-style icon.
 2. **Use the `text` field only as a fallback** for questions structured fields can't answer (rulings, card-interaction flavor). Say so explicitly when you do.
 3. **When reporting counts, list the matching card names** (`ID — Name`) so the user can verify.
 4. **Closed vocabularies.** `abilities`, `requires`, `provides`, and `triggers` draw exclusively from `ABILITIES.md`. If a user references a tag not in that file, tell them the tag doesn't exist in this dataset and suggest the closest real one — **do not invent tags**.
-5. **Duplicates encode multiplicity** in `biomes`, `continents`, `abilities`, `requires`, `provides`. `["africa","africa"]` means Africa ×2. Don't dedupe when counting icons.
+5. **Duplicates encode multiplicity** in `continents`, `abilities`, `requires`, `provides`. `["africa","africa"]` means Africa ×2. Don't dedupe when counting icons. (Rock and water icon counts are stored as integers — `rock_icons: 2`, not `["rock","rock"]`.)
 6. **Every row contains every field.** `null` / `[]` / `{}` means "does not apply," not "unknown." When a card genuinely has a blank slot in the printed data, say "not captured in this dataset" rather than guessing.
 
 ## Files
 
 - `cards.jsonl` — the data. 312 rows. One JSON per line, every field present.
-- `SCHEMA.md` — every field name, type, semantics, and closed enum values.
+- `SCHEMA.md` — index of per-type schemas, plus global enums and design rules.
+- `SCHEMA-animal.md`, `SCHEMA-sponsor.md`, `SCHEMA-conservation-project.md`, `SCHEMA-final-scoring.md` — full field semantics for each card type. Fetch only the one(s) you need.
 - `ABILITIES.md` — closed tag vocabulary for `abilities` / `requires` / `provides` / `triggers`.
 - `sets/base.txt`, `sets/marine-worlds.txt`, `sets/zoo-map.txt`, `sets/promos.txt` — card-ID membership per set.
 - `README.md` — mirrors this file for GitHub landing-page rendering. Skip if you already have `llms.txt`.

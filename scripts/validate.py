@@ -18,7 +18,8 @@ REQUIRED_FIELDS = {
     "name": str,
     "set": str,
     "type": str,
-    "biomes": list,
+    "rock_icons": int,
+    "water_icons": int,
     "continents": list,
     "size": (int, type(None)),
     "abilities": list,
@@ -49,7 +50,6 @@ REQUIRED_FIELDS = {
 
 SET_ENUM = {"base", "marine-worlds", "zoo-map", "promos"}
 TYPE_ENUM = {"animal", "sponsor", "conservation-project", "zoo-map", "final-scoring", "other"}
-BIOME_ENUM = {"rock", "water", "marine"}
 CONTINENT_ENUM = {"africa", "americas", "asia", "europe", "australia"}
 TAG_LINE = re.compile(r"^\s*-\s+`([a-z0-9\-]+)`")
 
@@ -80,9 +80,10 @@ def check_row(row: dict, lineno: int, valid_tags: set[str]) -> list[str]:
     if "type" in row and row["type"] not in TYPE_ENUM:
         errors.append(f"{prefix}: invalid `type` value `{row['type']}`")
 
-    for b in row.get("biomes", []) or []:
-        if b not in BIOME_ENUM:
-            errors.append(f"{prefix}: invalid biome `{b}`")
+    for f in ("rock_icons", "water_icons"):
+        v = row.get(f)
+        if isinstance(v, int) and v < 0:
+            errors.append(f"{prefix}: `{f}` must be ≥ 0 (got {v})")
     for c in row.get("continents", []) or []:
         if c not in CONTINENT_ENUM:
             errors.append(f"{prefix}: invalid continent `{c}`")
