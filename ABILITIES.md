@@ -25,18 +25,20 @@ Used in `requires` / `provides` for rock- or water-icon thresholds printed on sp
 - `water` — water-requirement icon.
 - `rock` — rock-requirement icon.
 
-## Animal group icons
+## Animal categories
 
-Tags that indicate the printed "group" icon(s) on an animal or project card.
+The 8 official animal categories from the rulebook (base manual page 13: *"There are 7 animal categories in Ark Nova"*; Marine Worlds adds Sea Animals as the 8th). On animal and conservation-project cards the printed category icon(s) live in the structured `categories` field — **not** in `abilities`. These tags also appear in `requires` (prereq for N category icons in the zoo) and `provides` (sponsors granting category icons).
 
-- `ape` — primate / ape group icon.
-- `bear` — bear group icon.
-- `bird` — bird group icon.
-- `herbivore` — herbivore icon (animals marked as herbivores).
-- `lizard` — reptile group icon (generally called "lizard" in the source; covers reptiles).
-- `marine` — marine / aquarium group icon (Marine Worlds marine animals).
-- `pet` — petting-zoo animal icon (eligible for the petting-zoo enclosure).
-- `predator` — predator icon (animals marked as predators).
+- `bear` — bear category icon. (Subcategory of herbivore/predator per the manual, but treated as its own category for game purposes.)
+- `bird` — bird category icon.
+- `herbivore` — herbivore category icon.
+- `petting-zoo` — petting-zoo-animal category icon (animals housed in the Petting Zoo).
+- `predator` — predator category icon.
+- `primate` — primate category icon.
+- `reptile` — reptile category icon (covers all reptiles).
+- `sea-animal` — sea-animal category icon (Marine Worlds; cards showing the octopus icon).
+
+Note: `sea-animal` also appears as a sub-type value in `ability_targets` (e.g. for *Sea Animal Magnet*) — same string, different field namespace.
 
 ## Card-has-value flags
 
@@ -96,7 +98,7 @@ These strings appear as values in the `ability_targets` map, pairing with parame
 - `build` — the Build action card.
 - `animals` — generic "animals" target.
 - `africa`, `americas`, `asia`, `europe`, `australia` — continent sub-types (e.g. `iconic`: `europe` = Iconic Animal: Europe).
-- `sea-animal` — marine-animal sub-type (for Sea Animal Magnet, etc.).
+- `sea-animal` — sea-animal sub-type (for Sea Animal Magnet, etc.).
 
 ## Ability keywords (animal cards)
 

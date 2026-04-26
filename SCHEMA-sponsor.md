@@ -1,6 +1,6 @@
 # Sponsor schema
 
-Schema for cards with `"type": "sponsor"`. **87 cards** in the dataset (base + Marine Worlds).
+Schema for cards with `"type": "sponsor"`. **80 cards** in the dataset (base + Marine Worlds).
 
 Sponsors are non-animal cards played for their effects. Each sponsor has a printed strength / level (the gating rule for which sponsors a player may play, controlled by their sponsor card on the action board) and an effect described in `text`. Effects decompose into `provides` icons and `triggers`.
 
@@ -31,7 +31,7 @@ Read [SCHEMA.md](./SCHEMA.md) first for the global enums, the closed-vocabulary 
 
 | Field | Type | Description |
 |---|---|---|
-| `abilities` | array of tag | Category tags on the card itself (e.g. `["science"]` for the science-lab sponsor). **Duplicates encode multiplicity.** `[]` if none. |
+| `abilities` | array of tag | Ability-keyword tags on the card itself (e.g. `["science"]` for the science-lab sponsor). **Duplicates encode multiplicity.** `[]` if none. |
 | `requires` | array of tag | Prereq tags — most commonly `level-ii-sponsor` / `level-iii-sponsor` gating tags, or named-icon prereqs. Duplicates allowed. `[]` if no prerequisites. |
 | `provides` | array of tag | Icons / effects the sponsor *grants* when played. **This is the sponsor-specific field.** Duplicates encode multiplicity. `[]` if the sponsor's effect is purely procedural (not modelled as a discrete icon-grant). |
 | `triggers` | array of tag | When the effect fires — typically a subset of `immediate`, `ongoing`, `end`, plus reactive triggers (e.g. `on-play-animal`). Duplicates allowed. `[]` if the sponsor has no fire-time semantics modelled. |
@@ -59,6 +59,7 @@ These fields are part of every row but are **constant** on sponsor cards:
 | `rock_icons` | `0` | animal |
 | `water_icons` | `0` | animal |
 | `continents` | `[]` | animal |
+| `categories` | `[]` | animal, conservation-project |
 | `size` | `null` | animal |
 | `appeal` | `null` | animal |
 | `conservation_points` | `null` | animal |
@@ -86,6 +87,7 @@ Has all three trigger phases (immediate, ongoing, end), a level-II prereq, and p
   "rock_icons": 0,
   "water_icons": 0,
   "continents": [],
+  "categories": [],
   "size": null,
   "abilities": ["science"],
   "requires": ["level-ii-sponsor"],

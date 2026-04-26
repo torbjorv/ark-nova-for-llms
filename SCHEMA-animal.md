@@ -26,9 +26,10 @@ Read [SCHEMA.md](./SCHEMA.md) first for the global enums (`set`, `type`, `contin
 | `rock_icons` | integer | Number of rock-requirement icons printed on the card (`0`–`2` in practice). The animal's enclosure must include this many rock spaces. |
 | `water_icons` | integer | Number of water-requirement icons printed on the card (`0`–`2` in practice). The animal's enclosure must include this many water spaces. |
 | `continents` | array of enum | Continent icons, from the global `continents` enum. **Duplicates encode multiplicity** — `["africa","africa"]` = Africa ×2. `[]` for animals with no continent attribution. |
+| `categories` | array of enum | Animal categories printed on the card, from the global `categories` enum (`bear`, `bird`, `herbivore`, `petting-zoo`, `predator`, `primate`, `reptile`, `sea-animal`). Most animals have one category; some belong to two (e.g. Sand Tiger Shark = sea-animal + predator). `[]` only for cards with no printed category icon. **Duplicates encode multiplicity** in principle, though no real card prints the same category twice. |
 | `wave_icon` | boolean | `true` if the card carries the Marine Worlds wave icon. `false` otherwise. |
 
-Marine identity is captured by the `marine` ability tag plus the `aquarium_size` field — there is no `marine` icon in the rock/water sense.
+Sea-animal identity is captured by `"sea-animal"` in `categories` plus the `aquarium_size` field — there is no sea-animal enclosure-requirement icon in the rock/water sense.
 
 ### Size & enclosure placement
 
@@ -58,7 +59,7 @@ To find animals placeable in a given enclosure kind, filter on the matching `*_s
 
 | Field | Type | Description |
 |---|---|---|
-| `abilities` | array of tag | Ability icons / category tags on the card, from `ABILITIES.md`. **Duplicates encode multiplicity.** `[]` if none. |
+| `abilities` | array of tag | **Ability keywords only** — `sprint`, `venom`, `inventive`, etc., from `ABILITIES.md`. Animal-category icons (`bear`, `bird`, `predator`, `sea-animal`, …) live in the structured `categories` field above, **not** here. **Duplicates encode multiplicity.** `[]` if the card has no ability keyword. |
 | `requires` | array of tag | Prereq tags from `ABILITIES.md` — enclosure prereqs, adjacency prereqs, category prereqs (e.g. `["predator","predator"]` for *2 predator icons in the zoo*). Duplicates allowed. `[]` if no prerequisites. |
 | `ability_levels` | object | `{tag: int}` for level-bearing abilities (e.g. `{"snapping": 2}` for Snapping 2). Keys must also appear in `abilities`. `{}` if none. |
 | `ability_targets` | object | `{tag: string}` for parameterised abilities (e.g. `{"iconic": "europe"}`). Keys must also appear in `abilities`. `{}` if none. |
@@ -96,8 +97,9 @@ Standard enclosure, no rock/water requirement, multi-icon prereq (Predator ×2):
   "rock_icons": 0,
   "water_icons": 0,
   "continents": ["americas"],
+  "categories": ["predator", "bear"],
   "size": 5,
-  "abilities": ["predator", "inventive", "full-throated"],
+  "abilities": ["inventive", "full-throated"],
   "requires": ["predator", "predator", "animals-ii"],
   "provides": [],
   "triggers": [],
@@ -137,9 +139,10 @@ Standard *and* small-reptile-house, one water icon, levelled ability:
   "rock_icons": 0,
   "water_icons": 1,
   "continents": ["africa"],
+  "categories": ["reptile"],
   "size": 5,
-  "abilities": ["lizard", "snapping"],
-  "requires": ["lizard", "lizard", "lizard"],
+  "abilities": ["snapping"],
+  "requires": ["reptile", "reptile", "reptile"],
   "ability_levels": {"snapping": 2},
   "ability_targets": {},
   "standard_size": 5,
@@ -156,7 +159,7 @@ Standard *and* small-reptile-house, one water icon, levelled ability:
 
 ### Sea animal — Blackside Hawkfish (`MW-533`, `(2) Aq 1`, reef `KIOSK/PAV`)
 
-Aquarium-only sea animal, wave-trigger, reef payload. Marine identity comes from the `marine` ability and `aquarium_size`, not from any rock/water icon.
+Aquarium-only sea animal, wave-trigger, reef payload. Sea-animal identity comes from `"sea-animal"` in `categories` plus `aquarium_size`, not from any rock/water icon.
 
 ```json
 {
@@ -167,8 +170,9 @@ Aquarium-only sea animal, wave-trigger, reef payload. Marine identity comes from
   "rock_icons": 0,
   "water_icons": 0,
   "continents": ["australia"],
+  "categories": ["sea-animal"],
   "size": 2,
-  "abilities": ["marine", "posturing"],
+  "abilities": ["posturing"],
   "ability_levels": {"posturing": 1},
   "standard_size": null,
   "aquarium_size": 1,

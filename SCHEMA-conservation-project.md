@@ -1,6 +1,6 @@
 # Conservation-project schema
 
-Schema for cards with `"type": "conservation-project"`. **41 cards** in the dataset (base + Marine Worlds).
+Schema for cards with `"type": "conservation-project"`. **32 cards** in the dataset (base + Marine Worlds).
 
 Conservation projects are mid-game scoring cards: a player who meets the project's prerequisites may "support" it for tiered conservation-point and reputation rewards. The reward tiers shrink as more players support the project.
 
@@ -34,9 +34,10 @@ The validator enforces matching lengths when both arrays are non-empty.
 
 | Field | Type | Description |
 |---|---|---|
-| `requires` | array of tag | Prereq tags — typically a category icon (continent, animal class, or `rock` / `water`) the player must have in their zoo. Duplicates allowed. `[]` if the project's prerequisite isn't expressible as a tag. |
+| `categories` | array of enum | Animal-category icons printed on the project card itself (e.g. the *Reptiles* project shows a reptile icon). Drawn from the global `categories` enum. `[]` for projects with no printed category icon. |
+| `requires` | array of tag | Prereq tags — typically a category icon (continent, animal category, or `rock` / `water`) the player must have in their zoo. Duplicates allowed. `[]` if the project's prerequisite isn't expressible as a tag. |
 | `triggers` | array of tag | When the project's effect / scoring fires (e.g. `end` for end-of-game projects). `[]` for the standard mid-game support path that fires on the support action. |
-| `abilities` | array of tag | Category tags on the project itself (used by a small number of projects whose effect maps to a known ability). `[]` for typical projects. |
+| `abilities` | array of tag | Ability keywords on the project itself (used by a small number of projects whose effect maps to a known ability keyword). `[]` for typical projects. |
 
 ### Optional iconography (rare)
 
@@ -83,6 +84,7 @@ Standard tiered project: 5 Africa icons → 5 CP, 4 → 3 CP, 2 → 2 CP. Prereq
   "rock_icons": 0,
   "water_icons": 0,
   "continents": [],
+  "categories": [],
   "size": null,
   "abilities": [],
   "requires": ["collection-activity", "africa"],

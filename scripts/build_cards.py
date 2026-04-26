@@ -32,17 +32,20 @@ OUT = REPO / "cards.jsonl"
 
 ENCLOSURE_ICON_LETTERS = {"R": "rock_icons", "W": "water_icons"}
 
-# Maps Type-column tokens → (animal-icon ability tag, animal-icon count)
-TYPE_TOKEN_TO_TAG = {
+# Maps Type-column tokens → category tag.
+# These are the 8 official animal categories from the rulebook.
+CATEGORY_TOKEN_TO_TAG = {
     "predator": "predator",
     "herbivore": "herbivore",
     "bear": "bear",
-    "primate": "ape",
-    "reptile": "lizard",
+    "primate": "primate",
+    "reptile": "reptile",
     "bird": "bird",
-    "pet": "pet",
-    "sea animal": "marine",
+    "pet": "petting-zoo",
+    "sea animal": "sea-animal",
 }
+
+CATEGORY_TAGS = set(CATEGORY_TOKEN_TO_TAG.values())
 
 CONTINENT_MAP = {
     "africa": "africa",
@@ -251,15 +254,15 @@ def parse_enclosure(raw: Any) -> dict:
 # Type / continent columns
 # ---------------------------------------------------------------------------
 
-def parse_type_column(raw: Any) -> tuple[list[str], list[str]]:
-    """Return (abilities from icons, extras for notes).
+def parse_type_column(raw: Any) -> list[str]:
+    """Return the list of category tags printed on the card.
 
     Handles 'Predator', 'Predator/Bear', 'Predator x2', 'Sea Animal / Reptile', 'Sea Animal 2'.
     Duplicate tags encode multiplicity: 'Predator x2' → ['predator','predator'].
     """
-    icons: list[str] = []
+    cats: list[str] = []
     if raw is None:
-        return icons, []
+        return cats
     s = str(raw).strip().lower()
     # Split on '/' for multi-category
     parts = [p.strip() for p in s.split("/")]
@@ -276,10 +279,10 @@ def parse_type_column(raw: Any) -> tuple[list[str], list[str]]:
                 mult = int(m.group(1))
                 p = p[: m.start()].strip()
         p = p.strip()
-        tag = TYPE_TOKEN_TO_TAG.get(p)
+        tag = CATEGORY_TOKEN_TO_TAG.get(p)
         if tag:
-            icons.extend([tag] * mult)
-    return icons, []
+            cats.extend([tag] * mult)
+    return cats
 
 
 def parse_continent_column(raw: Any) -> list[str]:
@@ -357,8 +360,8 @@ def parse_reqs_column(raw: Any) -> tuple[list[str], int | None]:
 
 def _icon_name_to_tag(name: str) -> str | None:
     name = name.strip().lower()
-    if name in TYPE_TOKEN_TO_TAG:
-        return TYPE_TOKEN_TO_TAG[name]
+    if name in CATEGORY_TOKEN_TO_TAG:
+        return CATEGORY_TOKEN_TO_TAG[name]
     if name in CONTINENT_MAP:
         return CONTINENT_MAP[name]
     if name == "science":
@@ -460,7 +463,7 @@ def parse_bonuses(raw: Any) -> tuple[int | None, int | None, int | None]:
 # ---------------------------------------------------------------------------
 
 EMPTY = {
-    "rock_icons": 0, "water_icons": 0, "continents": [], "size": None,
+    "rock_icons": 0, "water_icons": 0, "continents": [], "categories": [], "size": None,
     "abilities": [], "requires": [], "provides": [], "triggers": [],
     "appeal": None, "conservation_points": None, "strength": None,
     "reputation_requirement": None, "reputation_reward": None, "money_cost": None,
@@ -523,14 +526,13 @@ def read_animals(ws) -> list[dict]:
         cid = f"{prefix}-{num:03d}"
 
         enc = parse_enclosure(enc_raw)
-        type_icons, _ = parse_type_column(type_raw)
+        categories = parse_type_column(type_raw)
         continents = parse_continent_column(cont_raw)
         req_tags, rep_req = parse_reqs_column(reqs_raw)
         abil_tags, abil_levels, abil_targets = parse_ability_column(abil_raw)
         appeal, cp, rep_reward = parse_bonuses(bonus_raw)
 
-        abilities = list(type_icons) + abil_tags
-        # Wave icon adds 'wave' tag for consistency with how other icons are tagged.
+        abilities = abil_tags
         wave_bool = bool(wave)
 
         notes = f"Latin: {latin}" if latin else None
@@ -544,6 +546,7 @@ def read_animals(ws) -> list[dict]:
             rock_icons=enc["rock_icons"],
             water_icons=enc["water_icons"],
             continents=continents,
+            categories=categories,
             size=enc["size"],
             abilities=abilities,
             requires=req_tags,
@@ -664,8 +667,8 @@ def parse_provides(raw: Any) -> list[str]:
         # normalise 'Research' → science
         if name in ("research", "science", "sceince"):
             tag = "science"
-        elif name in TYPE_TOKEN_TO_TAG:
-            tag = TYPE_TOKEN_TO_TAG[name]
+        elif name in CATEGORY_TOKEN_TO_TAG:
+            tag = CATEGORY_TOKEN_TO_TAG[name]
         elif name in CONTINENT_MAP:
             tag = CONTINENT_MAP[name]
         elif name == "rock":
@@ -675,7 +678,7 @@ def parse_provides(raw: Any) -> list[str]:
         elif name in ("rocks", "waters"):
             tag = name[:-1]
         elif name == "petting zoo animal":
-            tag = "pet"
+            tag = "petting-zoo"
         elif name == "x-token":
             tag = None
         else:
@@ -718,9 +721,10 @@ def read_conservation(ws) -> list[dict]:
         elif activity == "Partnership":
             triggers.append("on-partnership")
 
-        # Continent / animal-group requirements from the free-text field
+        # Continent / animal-category requirements from the free-text field
         extra_tags = _infer_project_requires(requirements_text)
         requires.extend(extra_tags)
+        categories = _project_categories(requires)
 
         rep_reward = None
         if isinstance(rep, int):
@@ -756,6 +760,7 @@ def read_conservation(ws) -> list[dict]:
             name=name.replace("*", "").strip() if name else name,
             set=set_name,
             type="conservation-project",
+            categories=categories,
             requires=requires,
             triggers=triggers,
             reputation_reward=rep_reward,
@@ -781,8 +786,8 @@ def _infer_project_requires(text: str | None) -> list[str]:
         ("australia", "australia"),
         ("bird", "bird"),
         ("predator", "predator"),
-        ("reptile", "lizard"),
-        ("primate", "ape"),
+        ("reptile", "reptile"),
+        ("primate", "primate"),
         ("herbavore", "herbivore"),
         ("herbivore", "herbivore"),
         ("water icon", "water"),
@@ -792,6 +797,13 @@ def _infer_project_requires(text: str | None) -> list[str]:
         if kw in low and tag not in tags:
             tags.append(tag)
     return tags
+
+
+def _project_categories(requires_tags: list[str]) -> list[str]:
+    """The project card prints its category icon. If `requires` includes a
+    category tag (because the project demands those icons in the zoo), the
+    same category appears on the project card itself."""
+    return [t for t in requires_tags if t in CATEGORY_TAGS]
 
 
 def parse_tier(raw: Any) -> list[int]:

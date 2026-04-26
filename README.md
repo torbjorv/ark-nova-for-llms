@@ -20,7 +20,7 @@ If shell access isn't available, fetch these four files over HTTPS:
 - https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/ABILITIES.md
 - https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/llms.txt
 
-Load `cards.jsonl` in full. At ~150 KB / 312 lines it fits in one fetch — don't chunk, paginate, or truncate.
+Load `cards.jsonl` in full. At ~225 KB / 289 lines it fits in one fetch — don't chunk, paginate, or truncate.
 
 ## How to answer queries
 
@@ -44,7 +44,7 @@ Load `cards.jsonl` in full. At ~150 KB / 312 lines it fits in one fetch — don'
 
 | File | Purpose |
 |---|---|
-| [`cards.jsonl`](cards.jsonl) | The data. 312 rows. One JSON per line. |
+| [`cards.jsonl`](cards.jsonl) | The data. 289 rows. One JSON per line. |
 | [`SCHEMA.md`](SCHEMA.md) | Index of per-type schemas, plus global enums and design rules. |
 | [`SCHEMA-animal.md`](SCHEMA-animal.md), [`SCHEMA-sponsor.md`](SCHEMA-sponsor.md), [`SCHEMA-conservation-project.md`](SCHEMA-conservation-project.md), [`SCHEMA-final-scoring.md`](SCHEMA-final-scoring.md) | Per-type field semantics. Each is a self-contained contract for one card type. |
 | [`ABILITIES.md`](ABILITIES.md) | Closed tag vocabulary. |

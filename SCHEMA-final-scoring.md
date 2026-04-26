@@ -1,6 +1,6 @@
 # Final-scoring schema
 
-Schema for cards with `"type": "final-scoring"`. **24 cards** in the dataset.
+Schema for cards with `"type": "final-scoring"`. **17 cards** in the dataset.
 
 Final-scoring cards are the end-of-game bonus tiles drawn at game start. Each describes a category of zoo content that earns CP in tiered amounts at game end. They aren't played from hand — they sit in the open and apply to all players, or to a specific player depending on the variant — but they're modelled as cards in this dataset because they share the prereq + tiered-reward structure.
 
@@ -34,7 +34,7 @@ Final-scoring cards are extremely sparse: aside from the common identity fields 
 
 | Field | Constant |
 |---|---|
-| `continents`, `abilities`, `requires`, `provides`, `triggers` | `[]` |
+| `continents`, `categories`, `abilities`, `requires`, `provides`, `triggers` | `[]` |
 | `rock_icons`, `water_icons` | `0` |
 | `size`, `appeal`, `conservation_points`, `strength`, `reputation_requirement`, `reputation_reward`, `money_cost` | `null` |
 | `standard_size`, `reptile_house_size`, `large_bird_aviary_size`, `petting_zoo_size`, `aquarium_size`, `large_reptile_house_size`, `reef_ability` | `null` |
@@ -56,6 +56,7 @@ The category being scored is captured in `name` and `text` (e.g. "Large Animal Z
   "rock_icons": 0,
   "water_icons": 0,
   "continents": [],
+  "categories": [],
   "size": null,
   "abilities": [],
   "requires": [],

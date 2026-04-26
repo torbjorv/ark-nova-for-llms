@@ -21,6 +21,7 @@ REQUIRED_FIELDS = {
     "rock_icons": int,
     "water_icons": int,
     "continents": list,
+    "categories": list,
     "size": (int, type(None)),
     "abilities": list,
     "requires": list,
@@ -51,6 +52,7 @@ REQUIRED_FIELDS = {
 SET_ENUM = {"base", "marine-worlds", "zoo-map", "promos"}
 TYPE_ENUM = {"animal", "sponsor", "conservation-project", "zoo-map", "final-scoring", "other"}
 CONTINENT_ENUM = {"africa", "americas", "asia", "europe", "australia"}
+CATEGORY_ENUM = {"bear", "bird", "herbivore", "petting-zoo", "predator", "primate", "reptile", "sea-animal"}
 TAG_LINE = re.compile(r"^\s*-\s+`([a-z0-9\-]+)`")
 
 
@@ -87,6 +89,9 @@ def check_row(row: dict, lineno: int, valid_tags: set[str]) -> list[str]:
     for c in row.get("continents", []) or []:
         if c not in CONTINENT_ENUM:
             errors.append(f"{prefix}: invalid continent `{c}`")
+    for c in row.get("categories", []) or []:
+        if c not in CATEGORY_ENUM:
+            errors.append(f"{prefix}: invalid category `{c}`")
 
     for tag_field in ("abilities", "requires", "provides", "triggers"):
         for tag in row.get(tag_field, []) or []:

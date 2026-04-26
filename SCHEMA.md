@@ -7,9 +7,9 @@ The schema is split by card type so each type can be evaluated in isolation:
 | `type` value | Schema | Cards in dataset |
 |---|---|---|
 | `animal` | [SCHEMA-animal.md](./SCHEMA-animal.md) | 160 |
-| `sponsor` | [SCHEMA-sponsor.md](./SCHEMA-sponsor.md) | 87 |
-| `conservation-project` | [SCHEMA-conservation-project.md](./SCHEMA-conservation-project.md) | 41 |
-| `final-scoring` | [SCHEMA-final-scoring.md](./SCHEMA-final-scoring.md) | 24 |
+| `sponsor` | [SCHEMA-sponsor.md](./SCHEMA-sponsor.md) | 80 |
+| `conservation-project` | [SCHEMA-conservation-project.md](./SCHEMA-conservation-project.md) | 32 |
+| `final-scoring` | [SCHEMA-final-scoring.md](./SCHEMA-final-scoring.md) | 17 |
 | `zoo-map` | (not yet populated) | 0 |
 | `other` | (not yet populated) | 0 |
 
@@ -36,6 +36,15 @@ Five continent icons. Use `[]` for cards with no continent attribution. Duplicat
 africa | americas | asia | europe | australia
 ```
 
+### `categories`
+The 8 official animal categories from the rulebook (base manual page 13 lists 7; Marine Worlds adds `sea-animal`). Used on animal and conservation-project cards to record category icons printed on the card itself. `[]` for cards with no category icon. Duplicates encode multiplicity.
+
+```
+bear | bird | herbivore | petting-zoo | predator | primate | reptile | sea-animal
+```
+
+The same tag names appear in `requires` (e.g. `["predator","predator"]` = needs 2 predator icons in zoo) and in `provides` on sponsor cards (icons granted on play). The `categories` field is the per-card "what icons are printed here" list; `requires` / `provides` reference those icons in zoo-state context.
+
 ## Enclosure-requirement icons
 
 The Ark Nova rulebook talks about cards carrying "1 or 2 rock and/or water icons" — printed enclosure requirements that the zoo's `R` / `W` spaces must satisfy. There is no umbrella term in the rulebook, so the schema stores them as two integer counts:
@@ -45,14 +54,14 @@ The Ark Nova rulebook talks about cards carrying "1 or 2 rock and/or water icons
 
 `0` means the card has no icon of that kind. `["water","water"]` from the legacy schema is now `water_icons: 2`.
 
-There is no "marine" enclosure-requirement icon. Sea Animals are an animal *type* (captured by the `marine` ability tag on animal cards and the `aquarium_size` field for placement), not an enclosure requirement. A sea animal that also needs rock in its aquarium will have `rock_icons: 1` *and* `marine` in its abilities.
+There is no "marine" enclosure-requirement icon. Sea Animals are an animal *category* (captured by `"sea-animal"` in the `categories` field on animal cards and by the `aquarium_size` field for placement), not an enclosure requirement. A sea animal that also needs rock in its aquarium will have `rock_icons: 1` *and* `"sea-animal"` in `categories`.
 
 ## Tag fields
 
 `abilities`, `requires`, `provides`, `triggers` each draw from the closed vocabulary in [`ABILITIES.md`](./ABILITIES.md). Each tag must be defined there before it can appear in a row. The validator enforces this.
 
 The semantics differ by tag-field role:
-- `abilities` — category tags / ability icons printed on the card itself.
+- `abilities` — ability keywords printed on the card itself (e.g. `sprint`, `venom`, `inventive`). Animal-category icons are **not** here — they live in `categories` (see above).
 - `requires` — prerequisite tags that must be satisfied to play / support / activate.
 - `provides` — icons / effects the card *grants* when played (sponsor-specific).
 - `triggers` — when the card's effect fires (`immediate`, `ongoing`, `end`, plus reactive triggers).
