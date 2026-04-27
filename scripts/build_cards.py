@@ -755,7 +755,9 @@ def read_conservation(ws) -> list[dict]:
             continue
         num = int(row[0])
         name = row[1]
-        deck = row[2]  # Base / Zoo
+        # row[2] is the spreadsheet's "Deck" column ("Base" = the 12 always-active
+        # base projects, "Zoo" = the 20 in-play conservation deck cards).
+        # Both are base-game content; we don't branch on it.
         activity = row[3]
         size_req_raw = row[4]
         cp_raw = row[5]
@@ -800,12 +802,8 @@ def read_conservation(ws) -> list[dict]:
         # also keep the base version via backup-only if it existed).
         # Simpler convention: if deck==Zoo, always AN-### (zoo-pack version); if deck==Base
         # and MW flag, MW-###; else AN-###.
-        if deck == "Zoo":
-            prefix = "AN"
-            set_value = ["base"]  # zoo-pack projects shipped with base? Actually they're from the zoo map pack
-        else:
-            prefix = "MW" if is_mw else "AN"
-            set_value = _set_value_for(is_mw, num, replaced)
+        prefix = "MW" if is_mw else "AN"
+        set_value = _set_value_for(is_mw, num, replaced)
         cid = f"{prefix}-{num:03d}"
 
         text = requirements_text or ""
