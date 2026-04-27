@@ -1,79 +1,23 @@
 # Ark Nova card database (for LLMs)
 
-A queryable dataset of Ark Nova (Feuerland Spiele / Capstone Games) cards as JSONL, with an in-memory SQLite query helper. Designed for LLMs and AI agents to answer natural-language queries about Ark Nova cards — filter by ability, continent, rock/water requirement, size, appeal, conservation points, enclosure space, or any combination.
+A queryable dataset of [Ark Nova](https://boardgamegeek.com/boardgame/342942/ark-nova) (Feuerland Spiele / Capstone Games) cards as JSONL, with a small SQL helper. Designed so an LLM agent can answer natural-language questions about the cards — by ability, continent, rock/water requirement, size, appeal, conservation points, enclosure space, or any combination.
 
-**If you're an LLM: read [`llms.txt`](llms.txt) first — it's the canonical operational manual for this repo, and is self-sufficient on the schema.** The rest of this file mirrors that content for GitHub's landing-page rendering.
+**If you're an LLM agent: read [`llms.txt`](llms.txt) — it's the operating manual.**
 
-## Load the data
+## What's in here
 
-Prefer `git clone`:
+`cards.jsonl` holds one JSON object per card with structured fields and verbatim text. [`scripts/query.py`](scripts/query.py) wraps it in an in-memory SQLite table called `cards` and runs SQL queries, returning JSONL on stdout. Together that's enough for an agent to answer questions like:
 
-```
-git clone https://github.com/torbjorv/ark-nova-for-llms.git
-cd ark-nova-for-llms
-```
-
-If shell access isn't available, fetch these files over HTTPS:
-
-- https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/cards.jsonl
-- https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/llms.txt
-- https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/ABILITIES.md
-
-Load `cards.jsonl` in full. At ~225 KB / 289 lines it fits in one fetch — don't chunk, paginate, or truncate.
-
-## Querying
-
-`scripts/query.py` loads `cards.jsonl` into an in-memory SQLite database and runs a SQL query, emitting JSONL on stdout. JSON-typed columns (`continents`, `categories`, `abilities`, `ability_levels`, ...) are returned as parsed JSON, not escaped strings.
-
-```
-python scripts/query.py "SELECT id, name, appeal FROM cards WHERE type = 'animal' ORDER BY appeal DESC LIMIT 3"
-python scripts/query.py - < query.sql
-```
-
-Use SQLite's JSON1 functions for the array/object columns:
-
-```
-python scripts/query.py "SELECT id, name FROM cards WHERE \
-  EXISTS (SELECT 1 FROM json_each(continents) WHERE value = 'europe') AND \
-  EXISTS (SELECT 1 FROM json_each(categories) WHERE value = 'bear')"
-```
-
-Full schema, idioms, and enum values: [`llms.txt`](llms.txt).
-
-## How to answer queries
-
-1. **Filter on structured fields first.** Field semantics live in the per-type schema (`SCHEMA-animal.md`, `SCHEMA-sponsor.md`, `SCHEMA-conservation-project.md`, `SCHEMA-final-scoring.md`); global enums and design rules live in `SCHEMA.md`.
-2. **Use the `text` field only as a fallback** for questions structured fields can't answer. Say so explicitly when you do.
-3. **When reporting counts, list the matching card names** (`ID — Name`) so the user can verify.
-4. **Closed vocabularies.** `abilities` / `requires` / `provides` / `triggers` draw exclusively from `ABILITIES.md`. Don't invent tags; tell the user if a requested tag doesn't exist.
-5. **Duplicates encode multiplicity** in `continents`, `abilities`, `requires`, `provides`. `["africa","africa"]` = Africa ×2. (Rock / water icon counts are integer fields: `rock_icons`, `water_icons`.)
-6. **Every row contains every field.** `null` / `[]` / `{}` means "does not apply," not "unknown."
-
-## Example queries this dataset can answer
-
-- *"How many marine animals require rock adjacency?"*
-- *"Which animals have Scavenging level 4 or higher?"*
-- *"Which cards can be placed in a reptile house?"*
 - *"Which Marine Worlds animals require the Animals II upgrade?"*
+- *"Which animals have Scavenging level 4 or higher?"*
 - *"Which final-scoring cards give 4 CP at their top tier?"*
 - *"All conservation projects that grant reputation on play."*
 
-## Files
+The full SQL schema and query idioms live in [`llms.txt`](llms.txt); the closed-vocabulary tag dictionary lives in [`ABILITIES.md`](ABILITIES.md).
 
-| File | Purpose |
-|---|---|
-| [`cards.jsonl`](cards.jsonl) | The data. 289 rows. One JSON per line. |
-| [`scripts/query.py`](scripts/query.py) | SQL frontend over `cards.jsonl`. |
-| [`llms.txt`](llms.txt) | Canonical operational manual for LLMs. Self-sufficient on the schema. |
-| [`ABILITIES.md`](ABILITIES.md) | Closed tag vocabulary. |
-| [`SCHEMA.md`](SCHEMA.md) | Index of per-type schemas, plus global enums and design rules. |
-| [`SCHEMA-animal.md`](SCHEMA-animal.md), [`SCHEMA-sponsor.md`](SCHEMA-sponsor.md), [`SCHEMA-conservation-project.md`](SCHEMA-conservation-project.md), [`SCHEMA-final-scoring.md`](SCHEMA-final-scoring.md) | Per-type field semantics. Each is a self-contained contract for one card type. |
-| [`CLAUDE.md`](CLAUDE.md) | Contributor rules (skip unless editing the dataset). |
-| `sets/*.txt` | Card-ID membership per set. |
+## Scope
 
-## Dataset scope
-
-Base game (235 cards) and Marine Worlds expansion (77). Zoo Map pack and promos are scoped but not yet populated (~600 cards at full coverage). Some tag definitions in `ABILITIES.md` carry a `(verify)` marker — treat those as best-effort.
+Base game (235 cards) and Marine Worlds expansion (77). Zoo Map pack and promos are scoped but not yet populated (~600 cards at full coverage). Tags marked `(verify)` in `ABILITIES.md` are best-effort.
 
 ## Contributing
 
