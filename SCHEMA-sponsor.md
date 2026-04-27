@@ -14,7 +14,7 @@ Read [SCHEMA.md](./SCHEMA.md) first for the global enums, the closed-vocabulary 
 |---|---|---|
 | `id` | string | Stable unique ID. |
 | `name` | string | Card name as printed. |
-| `set` | enum | One of the global `set` enum. |
+| `set` | array of enum | Non-empty subset of the global `set` enum. See SCHEMA.md for set semantics. |
 | `type` | const | Always `"sponsor"` for cards in this schema. |
 | `text` | string | Full verbatim card text. `""` only for trivial cases. |
 | `notes` | string or null | Currently always `null` for sponsors; reserved for rulings / FAQ refs. |
@@ -82,7 +82,7 @@ Has all three trigger phases (immediate, ongoing, end), a level-II prereq, and p
 {
   "id": "AN-201",
   "name": "Science Lab",
-  "set": "base",
+  "set": ["base", "marine-worlds"],
   "type": "sponsor",
   "rock_icons": 0,
   "water_icons": 0,
@@ -124,7 +124,7 @@ Ongoing-only trigger (fires whenever a research icon is played):
 {
   "id": "AN-202",
   "name": "Spokesperson",
-  "set": "base",
+  "set": ["base", "marine-worlds"],
   "type": "sponsor",
   "abilities": ["science"],
   "requires": [],

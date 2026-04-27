@@ -14,7 +14,7 @@ Read [SCHEMA.md](./SCHEMA.md) first for the global enums, the closed-vocabulary 
 |---|---|---|
 | `id` | string | Stable unique ID. |
 | `name` | string | Card name as printed. |
-| `set` | enum | One of the global `set` enum. |
+| `set` | array of enum | Non-empty subset of the global `set` enum. See SCHEMA.md for set semantics. |
 | `type` | const | Always `"conservation-project"` for cards in this schema. |
 | `text` | string | Full verbatim card text describing the project's prerequisite. `""` only for trivial cases. |
 | `notes` | string or null | Optional rulings / FAQ refs. `null` if none. |
@@ -79,7 +79,7 @@ Standard tiered project: 5 Africa icons → 5 CP, 4 → 3 CP, 2 → 2 CP. Prereq
 {
   "id": "AN-103",
   "name": "Africa",
-  "set": "base",
+  "set": ["base", "marine-worlds"],
   "type": "conservation-project",
   "rock_icons": 0,
   "water_icons": 0,

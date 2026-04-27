@@ -2,7 +2,8 @@
 """Regenerate sets/*.txt from cards.jsonl.
 
 Each set file lists the IDs of cards belonging to that set, one per line,
-sorted by ID. Runs from repo root.
+sorted by ID. A card may belong to multiple sets (the `set` field is a
+list); it gets one line in each matching set's file. Runs from repo root.
 """
 
 from __future__ import annotations
@@ -26,7 +27,8 @@ def main() -> int:
             if not line:
                 continue
             row = json.loads(line)
-            by_set[row["set"]].append(row["id"])
+            for s in row["set"]:
+                by_set[s].append(row["id"])
 
     for s in KNOWN_SETS | set(by_set.keys()):
         ids = sorted(by_set.get(s, []))

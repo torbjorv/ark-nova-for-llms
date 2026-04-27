@@ -18,9 +18,22 @@ This document holds the cross-type pieces: global enums, the closed-vocabulary r
 ## Global enums
 
 ### `set`
+
+Stored as a JSON array of strings, listing the **deck configurations** the card appears in (not a single "this came from product X" label). Element values:
+
 ```
 base | marine-worlds
 ```
+
+Allowed combinations and what they mean:
+
+| `set` value | meaning |
+|---|---|
+| `["base", "marine-worlds"]` | base card with no marine errata — in both pure-base and base+marine decks |
+| `["base"]` | base card that the Marine Worlds expansion replaces with errata — only in pure-base decks |
+| `["marine-worlds"]` | either a new marine card or the marine errata replacement — only in base+marine decks |
+
+The card's printing source (which physical box it came from) is encoded in the `id` prefix (`AN-` = base box, `MW-` = marine box), not in `set`.
 
 ### `type`
 ```

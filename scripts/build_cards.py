@@ -545,7 +545,7 @@ def read_animals(ws) -> list[dict]:
         mw_flag = row[12]
 
         is_mw = (mw_flag == "MW")
-        set_name = "marine-worlds" if is_mw else "base"
+        set_value = ["marine-worlds"] if is_mw else ["base"]
         prefix = "MW" if is_mw else "AN"
         cid = f"{prefix}-{num:03d}"
 
@@ -565,7 +565,7 @@ def read_animals(ws) -> list[dict]:
         card = new_card(
             id=cid,
             name=_titlecase(name_raw),
-            set=set_name,
+            set=set_value,
             type="animal",
             rock_icons=enc["rock_icons"],
             water_icons=enc["water_icons"],
@@ -618,7 +618,7 @@ def read_sponsors(ws) -> list[dict]:
         is_mw = (mw_raw == "MW")
         # Sponsors: if marked MW, it's a replacement → MW-###. Otherwise base → AN-###.
         prefix = "MW" if is_mw else "AN"
-        set_name = "marine-worlds" if is_mw else "base"
+        set_value = ["marine-worlds"] if is_mw else ["base"]
         cid = f"{prefix}-{num:03d}"
 
         # Parse requirements
@@ -648,7 +648,7 @@ def read_sponsors(ws) -> list[dict]:
         card = new_card(
             id=cid,
             name=name,
-            set=set_name,
+            set=set_value,
             type="sponsor",
             strength=strength if isinstance(strength, int) else None,
             requires=req_tags,
@@ -760,13 +760,13 @@ def read_conservation(ws) -> list[dict]:
         # and MW flag, MW-###; else AN-###.
         if deck == "Zoo":
             prefix = "AN"
-            set_name = "base"  # zoo-pack projects shipped with base? Actually they're from the zoo map pack
+            set_value = ["base"]  # zoo-pack projects shipped with base? Actually they're from the zoo map pack
         elif is_mw:
             prefix = "MW"
-            set_name = "marine-worlds"
+            set_value = ["marine-worlds"]
         else:
             prefix = "AN"
-            set_name = "base"
+            set_value = ["base"]
         cid = f"{prefix}-{num:03d}"
 
         text = requirements_text or ""
@@ -775,7 +775,7 @@ def read_conservation(ws) -> list[dict]:
         card = new_card(
             id=cid,
             name=name.replace("*", "").strip() if name else name,
-            set=set_name,
+            set=set_value,
             type="conservation-project",
             categories=categories,
             requires=requires,
@@ -858,7 +858,7 @@ def read_final_scoring(ws) -> list[dict]:
 
         is_mw = (mw_flag == "MW")
         prefix = "MW" if is_mw else "AN"
-        set_name = "marine-worlds" if is_mw else "base"
+        set_value = ["marine-worlds"] if is_mw else ["base"]
         cid = f"{prefix}-{num:03d}"
 
         text = text_raw or ""
@@ -867,7 +867,7 @@ def read_final_scoring(ws) -> list[dict]:
         card = new_card(
             id=cid,
             name=(name or "").replace("*", "").strip(),
-            set=set_name,
+            set=set_value,
             type="final-scoring",
             tier_thresholds=tier_thr,
             tier_rewards=tier_rew,

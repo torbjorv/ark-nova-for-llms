@@ -16,7 +16,7 @@ REPO = Path(__file__).resolve().parent.parent
 REQUIRED_FIELDS = {
     "id": str,
     "name": str,
-    "set": str,
+    "set": list,
     "type": str,
     "rock_icons": int,
     "water_icons": int,
@@ -77,8 +77,14 @@ def check_row(row: dict, lineno: int, valid_tags: set[str]) -> list[str]:
         if not isinstance(value, expected):
             errors.append(f"{prefix}: field `{field}` has wrong type ({type(value).__name__})")
 
-    if "set" in row and row["set"] not in SET_ENUM:
-        errors.append(f"{prefix}: invalid `set` value `{row['set']}`")
+    if "set" in row and isinstance(row["set"], list):
+        if not row["set"]:
+            errors.append(f"{prefix}: `set` must be non-empty")
+        if len(row["set"]) != len(set(row["set"])):
+            errors.append(f"{prefix}: `set` has duplicates: {row['set']}")
+        for s in row["set"]:
+            if s not in SET_ENUM:
+                errors.append(f"{prefix}: invalid `set` element `{s}`")
     if "type" in row and row["type"] not in TYPE_ENUM:
         errors.append(f"{prefix}: invalid `type` value `{row['type']}`")
 
