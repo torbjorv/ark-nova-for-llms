@@ -35,3 +35,5 @@ When in doubt about a card's text, an icon's meaning, or a rules edge case, cons
 ## Querying
 
 End-user query guidance lives in `README.md` and `llms.txt` (the latter is the canonical operational manual for LLM consumers; `README.md` mirrors it for the GitHub landing page).
+
+**When the user asks a question about the cards, answer it by running `python scripts/query.py "<SQL>"` rather than by grepping `cards.jsonl` or reading it directly.** The script loads the JSONL into an in-memory SQLite table named `cards` and returns JSONL on stdout. Read `llms.txt` for the column list, JSON-field idioms (`json_each`, `json_extract`), and enum values — it is self-sufficient on the schema. Fall back to `grep` / direct reads only when SQL genuinely cannot express the question (e.g. free-text searches inside `text` are fine in SQL via `LIKE`, so this is rare).

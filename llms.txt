@@ -1,50 +1,108 @@
 # Ark Nova card database
 
-A queryable dataset of Ark Nova (Feuerland Spiele / Capstone Games) cards as JSONL. 289 rows, ~225 KB. One JSON object per line. All filterable attributes are typed structured fields or closed-vocabulary tags; full verbatim card text is included for questions the structured fields can't answer.
+A queryable dataset of Ark Nova (Feuerland Spiele / Capstone Games) cards. Answer card questions by running SQL against `scripts/query.py`.
 
-## Load the data
-
-Prefer `git clone` — the repo is small and loads faster than fetching files one by one:
+## Setup
 
 ```
 git clone https://github.com/torbjorv/ark-nova-for-llms.git
 cd ark-nova-for-llms
 ```
 
-If shell access isn't available, fetch these files over HTTPS:
+## Querying
 
-- https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/cards.jsonl
-- https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/SCHEMA.md
-- https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/ABILITIES.md
-- https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/llms.txt
+`scripts/query.py` runs SQL against the card data. Each invocation loads the data into an in-memory SQLite table named `cards`, runs your SQL, and writes the result as JSONL on stdout — one JSON object per row, with JSON-typed columns emitted as parsed JSON.
 
-`SCHEMA.md` links to four per-type schemas (`SCHEMA-animal.md`, `SCHEMA-sponsor.md`, `SCHEMA-conservation-project.md`, `SCHEMA-final-scoring.md`). Fetch only the per-type schema for the card type the user is asking about — you don't need all four.
+```
+python scripts/query.py "<SQL>"
+python scripts/query.py - < query.sql
+```
 
-Load `cards.jsonl` **in full**. At ~225 KB / 289 lines it fits in one fetch — don't chunk, paginate, or truncate. If your fetch tool truncates, raise its token limit rather than working with a partial file.
+Examples:
+
+```
+python scripts/query.py "SELECT id, name, appeal FROM cards WHERE type = 'animal' ORDER BY appeal DESC LIMIT 3"
+
+python scripts/query.py "SELECT id, name FROM cards \
+  WHERE EXISTS (SELECT 1 FROM json_each(continents) WHERE value = 'europe') \
+    AND EXISTS (SELECT 1 FROM json_each(categories) WHERE value = 'bear')"
+```
+
+If you can't run shell commands yourself, write SQL against the schema below and ask the user to run it through `query.py`.
+
+## Schema
+
+Single table `cards`. Every row has every column.
+
+### Scalar columns
+
+| column | type | notes |
+|---|---|---|
+| `id` | TEXT | e.g. `AN-401`, `MW-544` |
+| `name` | TEXT | |
+| `set` | TEXT | enum (see below) |
+| `type` | TEXT | enum (see below) |
+| `rock_icons` | INTEGER | enclosure rock-icon count, ≥ 0 |
+| `water_icons` | INTEGER | enclosure water-icon count, ≥ 0 |
+| `size` | INTEGER \| NULL | base footprint for animals; NULL on non-animals |
+| `appeal` | INTEGER \| NULL | typical on animals |
+| `conservation_points` | INTEGER \| NULL | mostly on animals |
+| `strength` | INTEGER \| NULL | sponsor strength; NULL on non-sponsors |
+| `reputation_requirement` | INTEGER \| NULL | mostly on sponsors |
+| `reputation_reward` | INTEGER \| NULL | on some animals and conservation projects |
+| `money_cost` | INTEGER \| NULL | on animals; NULL on sponsors / projects / final-scoring |
+| `text` | TEXT | verbatim card text. Animals use `""` — their effects are encoded as tags, not prose |
+| `notes` | TEXT \| NULL | e.g. Latin name |
+| `standard_size` | INTEGER \| NULL | enclosure-fit fields below: NULL = animal cannot live there |
+| `reptile_house_size` | INTEGER \| NULL | |
+| `large_bird_aviary_size` | INTEGER \| NULL | |
+| `petting_zoo_size` | INTEGER \| NULL | |
+| `aquarium_size` | INTEGER \| NULL | |
+| `large_reptile_house_size` | INTEGER \| NULL | |
+| `reef_ability` | TEXT \| NULL | reef ability code (Marine Worlds) |
+| `wave_icon` | INTEGER (0/1) | wave trigger icon (Marine Worlds); SQLite has no native BOOL |
+
+### JSON-typed columns
+
+Stored as JSON text; query with the JSON1 functions. **Duplicates encode multiplicity** in `continents`, `categories`, `abilities`, `requires`, `provides` — don't dedupe when counting icons.
+
+| column | shape | example |
+|---|---|---|
+| `continents` | array of TEXT | `["europe"]`, `["africa","africa"]` |
+| `categories` | array of TEXT | `["predator","predator"]` |
+| `abilities` | array of TEXT | `["sprint"]` |
+| `requires` | array of TEXT | `["bear","animals-ii"]` |
+| `provides` | array of TEXT | `["science"]` |
+| `triggers` | array of TEXT | `["ongoing","end"]` |
+| `ability_levels` | object: tag → INTEGER | `{"sprint": 3}` |
+| `ability_targets` | object: tag → TEXT | `{"iconic": "europe"}` |
+| `tier_thresholds` | array of INTEGER | conservation-project levels |
+| `tier_rewards` | array of TEXT | conservation-project rewards |
+
+Idioms:
+
+- **Membership:** `EXISTS (SELECT 1 FROM json_each(<col>) WHERE value = '<tag>')`
+- **Occurrence count** (multiplicity): `(SELECT COUNT(*) FROM json_each(<col>) WHERE value = '<tag>')`
+- **Array length:** `json_array_length(<col>)`
+- **Object lookup:** `json_extract(ability_levels, '$.sprint')`
+- **All distinct values:** `SELECT DISTINCT value FROM cards, json_each(cards.abilities)`
+
+### Enums
+
+```
+set:        base | marine-worlds | zoo-map | promos
+type:       animal | sponsor | conservation-project | zoo-map | final-scoring | other
+continents: africa | americas | asia | europe | australia
+categories: bear | bird | herbivore | petting-zoo | predator | primate | reptile | sea-animal
+```
+
+Tag values for `abilities`, `requires`, `provides`, and `triggers` are a closed vocabulary defined in `ABILITIES.md`. **Don't invent tags.** If a user references a tag not in `ABILITIES.md`, tell them so and suggest the closest real one. To list the live vocabulary in-database: `SELECT DISTINCT value FROM cards, json_each(cards.abilities)` (and the same for the other three columns).
 
 ## How to answer queries
 
-1. **Filter on structured fields first.** `type`, `set`, `rock_icons`, `water_icons`, `continents`, `categories`, `size`, `abilities`, `requires`, `provides`, `triggers`, `appeal`, `conservation_points`, `strength`, `reputation_requirement`, `reputation_reward`, `money_cost`, `standard_size`, `reptile_house_size`, `large_bird_aviary_size`, `petting_zoo_size`, `aquarium_size`, `large_reptile_house_size`, `reef_ability`, `wave_icon`, `ability_levels`, `ability_targets`, `tier_thresholds`, `tier_rewards`. Field semantics live in the per-type schema (`SCHEMA-animal.md` etc.); global enums and design rules live in `SCHEMA.md`. To find animals placeable in a given enclosure kind, filter on the matching `*_size` field being non-null. **Animal categories are stored in `categories`, not `abilities`** — for "Europe + bear" filter `"europe" in continents` AND `"bear" in categories`. The 8 categories: `bear`, `bird`, `herbivore`, `petting-zoo`, `predator`, `primate`, `reptile`, `sea-animal`. Sea animals are filtered as `"sea-animal" in categories` (and/or `aquarium_size` non-null), not as a rock/water-style icon.
-2. **Use the `text` field only as a fallback** for questions structured fields can't answer (rulings, card-interaction flavor). Say so explicitly when you do.
-3. **When reporting counts, list the matching card names** (`ID — Name`) so the user can verify.
-4. **Closed vocabularies.** `abilities`, `requires`, `provides`, and `triggers` draw exclusively from `ABILITIES.md`. If a user references a tag not in that file, tell them the tag doesn't exist in this dataset and suggest the closest real one — **do not invent tags**.
-5. **Duplicates encode multiplicity** in `continents`, `categories`, `abilities`, `requires`, `provides`. `["africa","africa"]` means Africa ×2. Don't dedupe when counting icons. (Rock and water icon counts are stored as integers — `rock_icons: 2`, not `["rock","rock"]`.)
-6. **Every row contains every field.** `null` / `[]` / `{}` means "does not apply," not "unknown." When a card genuinely has a blank slot in the printed data, say "not captured in this dataset" rather than guessing.
-
-## Files
-
-- `cards.jsonl` — the data. 289 rows. One JSON per line, every field present.
-- `SCHEMA.md` — index of per-type schemas, plus global enums and design rules.
-- `SCHEMA-animal.md`, `SCHEMA-sponsor.md`, `SCHEMA-conservation-project.md`, `SCHEMA-final-scoring.md` — full field semantics for each card type. Fetch only the one(s) you need.
-- `ABILITIES.md` — closed tag vocabulary for `abilities` / `requires` / `provides` / `triggers`.
-- `sets/base.txt`, `sets/marine-worlds.txt`, `sets/zoo-map.txt`, `sets/promos.txt` — card-ID membership per set.
-- `README.md` — mirrors this file for GitHub landing-page rendering. Skip if you already have `llms.txt`.
-- `CLAUDE.md` — contributor-side rules. Skip unless editing the dataset.
-
-## Dataset scope
-
-Base game (235 cards) and Marine Worlds expansion (77). Zoo Map pack and promos are in-scope but not yet populated (~600 cards at full coverage). Some ability definitions in `ABILITIES.md` are marked `(verify)` and should be treated as best-effort until confirmed against the printed cards.
-
-## Copyright
-
-Ark Nova © Feuerland Spiele / Capstone Games. Card names and attribute data reproduced for reference and query purposes; no card images redistributed. Not affiliated with Feuerland or Capstone.
+1. **Filter on structured columns first.** Use `text` only as a fallback for rulings / interaction flavor, and say so when you do.
+2. **Animal categories live in `categories`, not `abilities`.** "Europe + bear" is `EXISTS (... continents = 'europe')` AND `EXISTS (... categories = 'bear')`.
+3. **Sea animals** are filtered as `categories` membership of `'sea-animal'` (and/or `aquarium_size IS NOT NULL`). There is no "marine" enclosure-icon — `rock_icons` and `water_icons` stay separate integers.
+4. **Enclosure fit:** to find animals placeable in a given enclosure kind, filter on the matching `*_size` column being non-null.
+5. **Report counts with the matching `id — name` list** so the user can verify.
+6. **Nulls / `[]` / `{}` mean "does not apply"**, not "unknown." Don't guess at blanks; say "not captured in this dataset."

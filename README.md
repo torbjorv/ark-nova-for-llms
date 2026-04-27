@@ -1,8 +1,8 @@
 # Ark Nova card database (for LLMs)
 
-A queryable dataset of Ark Nova (Feuerland Spiele / Capstone Games) cards as JSONL. Designed for LLMs and AI agents to answer natural-language queries about Ark Nova cards — filter by ability, continent, rock/water requirement, size, appeal, conservation points, enclosure space, or any combination.
+A queryable dataset of Ark Nova (Feuerland Spiele / Capstone Games) cards as JSONL, with an in-memory SQLite query helper. Designed for LLMs and AI agents to answer natural-language queries about Ark Nova cards — filter by ability, continent, rock/water requirement, size, appeal, conservation points, enclosure space, or any combination.
 
-**If you're an LLM: read [`llms.txt`](llms.txt) first — it's the canonical operational manual for this repo.** The rest of this file mirrors that content for GitHub's landing-page rendering.
+**If you're an LLM: read [`llms.txt`](llms.txt) first — it's the canonical operational manual for this repo, and is self-sufficient on the schema.** The rest of this file mirrors that content for GitHub's landing-page rendering.
 
 ## Load the data
 
@@ -13,14 +13,32 @@ git clone https://github.com/torbjorv/ark-nova-for-llms.git
 cd ark-nova-for-llms
 ```
 
-If shell access isn't available, fetch these four files over HTTPS:
+If shell access isn't available, fetch these files over HTTPS:
 
 - https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/cards.jsonl
-- https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/SCHEMA.md
-- https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/ABILITIES.md
 - https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/llms.txt
+- https://raw.githubusercontent.com/torbjorv/ark-nova-for-llms/main/ABILITIES.md
 
 Load `cards.jsonl` in full. At ~225 KB / 289 lines it fits in one fetch — don't chunk, paginate, or truncate.
+
+## Querying
+
+`scripts/query.py` loads `cards.jsonl` into an in-memory SQLite database and runs a SQL query, emitting JSONL on stdout. JSON-typed columns (`continents`, `categories`, `abilities`, `ability_levels`, ...) are returned as parsed JSON, not escaped strings.
+
+```
+python scripts/query.py "SELECT id, name, appeal FROM cards WHERE type = 'animal' ORDER BY appeal DESC LIMIT 3"
+python scripts/query.py - < query.sql
+```
+
+Use SQLite's JSON1 functions for the array/object columns:
+
+```
+python scripts/query.py "SELECT id, name FROM cards WHERE \
+  EXISTS (SELECT 1 FROM json_each(continents) WHERE value = 'europe') AND \
+  EXISTS (SELECT 1 FROM json_each(categories) WHERE value = 'bear')"
+```
+
+Full schema, idioms, and enum values: [`llms.txt`](llms.txt).
 
 ## How to answer queries
 
@@ -45,10 +63,11 @@ Load `cards.jsonl` in full. At ~225 KB / 289 lines it fits in one fetch — don'
 | File | Purpose |
 |---|---|
 | [`cards.jsonl`](cards.jsonl) | The data. 289 rows. One JSON per line. |
+| [`scripts/query.py`](scripts/query.py) | SQL frontend over `cards.jsonl`. |
+| [`llms.txt`](llms.txt) | Canonical operational manual for LLMs. Self-sufficient on the schema. |
+| [`ABILITIES.md`](ABILITIES.md) | Closed tag vocabulary. |
 | [`SCHEMA.md`](SCHEMA.md) | Index of per-type schemas, plus global enums and design rules. |
 | [`SCHEMA-animal.md`](SCHEMA-animal.md), [`SCHEMA-sponsor.md`](SCHEMA-sponsor.md), [`SCHEMA-conservation-project.md`](SCHEMA-conservation-project.md), [`SCHEMA-final-scoring.md`](SCHEMA-final-scoring.md) | Per-type field semantics. Each is a self-contained contract for one card type. |
-| [`ABILITIES.md`](ABILITIES.md) | Closed tag vocabulary. |
-| [`llms.txt`](llms.txt) | Canonical operational manual for LLMs. |
 | [`CLAUDE.md`](CLAUDE.md) | Contributor rules (skip unless editing the dataset). |
 | `sets/*.txt` | Card-ID membership per set. |
 
