@@ -83,8 +83,8 @@ Idioms:
 ### Enums
 
 ```
-set:        base | marine-worlds | zoo-map | promos
-type:       animal | sponsor | conservation-project | zoo-map | final-scoring | other
+set:        base | marine-worlds
+type:       animal | sponsor | conservation-project | final-scoring
 continents: africa | americas | asia | europe | australia
 categories: bear | bird | herbivore | petting-zoo | predator | primate | reptile | sea-animal
 ```

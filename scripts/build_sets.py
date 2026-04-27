@@ -15,7 +15,7 @@ REPO = Path(__file__).resolve().parent.parent
 SETS_DIR = REPO / "sets"
 
 # All sets the schema knows about — make sure every file exists even if empty.
-KNOWN_SETS = {"base", "marine-worlds", "zoo-map", "promos"}
+KNOWN_SETS = {"base", "marine-worlds"}
 
 
 def main() -> int:

@@ -49,8 +49,8 @@ REQUIRED_FIELDS = {
     "tier_rewards": list,
 }
 
-SET_ENUM = {"base", "marine-worlds", "zoo-map", "promos"}
-TYPE_ENUM = {"animal", "sponsor", "conservation-project", "zoo-map", "final-scoring", "other"}
+SET_ENUM = {"base", "marine-worlds"}
+TYPE_ENUM = {"animal", "sponsor", "conservation-project", "final-scoring"}
 CONTINENT_ENUM = {"africa", "americas", "asia", "europe", "australia"}
 CATEGORY_ENUM = {"bear", "bird", "herbivore", "petting-zoo", "predator", "primate", "reptile", "sea-animal"}
 TAG_LINE = re.compile(r"^\s*-\s+`([a-z0-9\-]+)`")

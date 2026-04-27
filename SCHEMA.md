@@ -10,8 +10,6 @@ The schema is split by card type so each type can be evaluated in isolation:
 | `sponsor` | [SCHEMA-sponsor.md](./SCHEMA-sponsor.md) | 80 |
 | `conservation-project` | [SCHEMA-conservation-project.md](./SCHEMA-conservation-project.md) | 32 |
 | `final-scoring` | [SCHEMA-final-scoring.md](./SCHEMA-final-scoring.md) | 17 |
-| `zoo-map` | (not yet populated) | 0 |
-| `other` | (not yet populated) | 0 |
 
 Each per-type schema lists every field that can carry a value on that card type **and** the fields that are constant (always `null` / `[]` / `{}` / `false`) for that type. Together they cover the full row contract.
 
@@ -21,12 +19,12 @@ This document holds the cross-type pieces: global enums, the closed-vocabulary r
 
 ### `set`
 ```
-base | marine-worlds | zoo-map | promos
+base | marine-worlds
 ```
 
 ### `type`
 ```
-animal | sponsor | conservation-project | zoo-map | final-scoring | other
+animal | sponsor | conservation-project | final-scoring
 ```
 
 ### `continents`

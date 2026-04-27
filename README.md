@@ -17,7 +17,7 @@ The full SQL schema and query idioms live in [`llms.txt`](llms.txt); the closed-
 
 ## Scope
 
-Base game (235 cards) and Marine Worlds expansion (77). Zoo Map pack and promos are scoped but not yet populated (~600 cards at full coverage). Tags marked `(verify)` in `ABILITIES.md` are best-effort.
+Currently covers the base game and the Marine Worlds expansion. Other expansions and promos are out of scope. Tags marked `(verify)` in `ABILITIES.md` are best-effort.
 
 ## Contributing
 
