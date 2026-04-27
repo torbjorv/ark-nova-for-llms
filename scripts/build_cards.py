@@ -209,6 +209,42 @@ def _norm(s: str) -> str:
     return re.sub(r"\s+", " ", s.strip().lower())
 
 
+def _collect_replacement_numbers(rows: list, mw_col: int) -> set[int]:
+    """Numbers of cards in `rows` that the Marine Worlds expansion replaces.
+
+    A replacement row has `MW` in the mw_flag column AND a name ending in `*`.
+    The same number with no `MW` flag is the base printing the marine row
+    replaces — its `set` should be ["base"] (only seen in pure-base games).
+    """
+    replaced: set[int] = set()
+    for row in rows[1:]:
+        if not row or row[0] is None:
+            continue
+        name = row[1]
+        mw = row[mw_col]
+        if mw == "MW" and isinstance(name, str) and name.strip().endswith("*"):
+            try:
+                replaced.add(int(row[0]))
+            except (ValueError, TypeError):
+                pass
+    return replaced
+
+
+def _set_value_for(is_mw: bool, num: int, replaced: set[int]) -> list[str]:
+    """Map an MW-flag + sheet number to a `set` field value.
+
+    - Marine row (MW flag, with or without `*`): only in base+marine games → ["marine-worlds"].
+    - Base row whose number has a marine errata replacement: only in pure-base
+      games → ["base"].
+    - Base row with no errata: in both decks → ["base", "marine-worlds"].
+    """
+    if is_mw:
+        return ["marine-worlds"]
+    if num in replaced:
+        return ["base"]
+    return ["base", "marine-worlds"]
+
+
 # ---------------------------------------------------------------------------
 # Enclosure parsing
 # ---------------------------------------------------------------------------
@@ -524,6 +560,7 @@ def _titlecase(name: str) -> str:
 
 def read_animals(ws) -> list[dict]:
     rows = list(ws.iter_rows(values_only=True))
+    replaced = _collect_replacement_numbers(rows, mw_col=12)
     cards = []
     for row in rows[1:]:
         if not row or row[0] is None:
@@ -545,7 +582,7 @@ def read_animals(ws) -> list[dict]:
         mw_flag = row[12]
 
         is_mw = (mw_flag == "MW")
-        set_value = ["marine-worlds"] if is_mw else ["base"]
+        set_value = _set_value_for(is_mw, num, replaced)
         prefix = "MW" if is_mw else "AN"
         cid = f"{prefix}-{num:03d}"
 
@@ -600,6 +637,7 @@ def read_animals(ws) -> list[dict]:
 
 def read_sponsors(ws) -> list[dict]:
     rows = list(ws.iter_rows(values_only=True))
+    replaced = _collect_replacement_numbers(rows, mw_col=9)
     cards = []
     for row in rows[1:]:
         if not row or row[0] is None or not isinstance(row[0], int):
@@ -618,8 +656,11 @@ def read_sponsors(ws) -> list[dict]:
         is_mw = (mw_raw == "MW")
         # Sponsors: if marked MW, it's a replacement → MW-###. Otherwise base → AN-###.
         prefix = "MW" if is_mw else "AN"
-        set_value = ["marine-worlds"] if is_mw else ["base"]
+        set_value = _set_value_for(is_mw, num, replaced)
         cid = f"{prefix}-{num:03d}"
+        # Strip the trailing `*` errata marker from the printed name.
+        if isinstance(name, str):
+            name = name.rstrip().rstrip("*").rstrip()
 
         # Parse requirements
         req_tags, rep_req = parse_reqs_column(reqs_raw)
@@ -707,6 +748,7 @@ def parse_provides(raw: Any) -> list[str]:
 
 def read_conservation(ws) -> list[dict]:
     rows = list(ws.iter_rows(values_only=True))
+    replaced = _collect_replacement_numbers(rows, mw_col=8)
     cards = []
     for row in rows[1:]:
         if not row or row[0] is None:
@@ -761,12 +803,9 @@ def read_conservation(ws) -> list[dict]:
         if deck == "Zoo":
             prefix = "AN"
             set_value = ["base"]  # zoo-pack projects shipped with base? Actually they're from the zoo map pack
-        elif is_mw:
-            prefix = "MW"
-            set_value = ["marine-worlds"]
         else:
-            prefix = "AN"
-            set_value = ["base"]
+            prefix = "MW" if is_mw else "AN"
+            set_value = _set_value_for(is_mw, num, replaced)
         cid = f"{prefix}-{num:03d}"
 
         text = requirements_text or ""
@@ -841,6 +880,7 @@ def parse_tier(raw: Any) -> list[int]:
 
 def read_final_scoring(ws) -> list[dict]:
     rows = list(ws.iter_rows(values_only=True))
+    replaced = _collect_replacement_numbers(rows, mw_col=6)
     cards = []
     for row in rows[1:]:
         if not row or row[0] is None:
@@ -858,7 +898,7 @@ def read_final_scoring(ws) -> list[dict]:
 
         is_mw = (mw_flag == "MW")
         prefix = "MW" if is_mw else "AN"
-        set_value = ["marine-worlds"] if is_mw else ["base"]
+        set_value = _set_value_for(is_mw, num, replaced)
         cid = f"{prefix}-{num:03d}"
 
         text = text_raw or ""
