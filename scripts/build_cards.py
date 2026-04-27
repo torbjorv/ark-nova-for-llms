@@ -55,18 +55,84 @@ CONTINENT_MAP = {
     "australia": "australia",
 }
 
-REQS_TAG_MAP = {
-    "partner zoo": "partner-zoo",
-    "animals ii": "animals-ii",
-    "animals 2": "animals-ii",
-    "sponsor ii": "level-ii-sponsor",
-    "level ii sponsor card": "level-ii-sponsor",
-    "university": "university",
-    "science": "science",
-    "kiosk": "kiosk",
-    "max. 25 appeal": "max-25-appeal",
-    "max 25 appeal": "max-25-appeal",
+# Lookup table for the spreadsheet's requirement column. Keys are the
+# spreadsheet cell value, _norm()-ed (lowercased, all whitespace including
+# `\n` collapsed to single spaces, leading/trailing whitespace trimmed).
+# Values are the literal `requires` tag list, with multiplicity already
+# expanded (e.g. `Predator x3` → 3 × `predator`).
+#
+# Reputation thresholds are *not* encoded here — they're extracted separately
+# by `_REP_RE` and populate the `reputation_requirement` column. Mixed strings
+# like `Level II Sponsor Card, 6 Reputation` list only the non-rep tags.
+#
+# To support a new spreadsheet string, add one entry. Unknown strings produce
+# a stderr warning during build.
+REQUIREMENT_LUT: dict[str, list[str]] = {
+    # --- Animal Reqs cell values ---
+    "africa":                          ["africa"],
+    "africa x2":                       ["africa", "africa"],
+    "africa x3":                       ["africa", "africa", "africa"],
+    "africa reptile":                  ["africa", "reptile"],
+    "americas":                        ["americas"],
+    "americas x2 animals ii":          ["americas", "americas", "animals-ii"],
+    "americas x3":                     ["americas", "americas", "americas"],
+    "animals ii":                      ["animals-ii"],
+    "asia":                            ["asia"],
+    "asia x2":                         ["asia", "asia"],
+    "asia x3":                         ["asia", "asia", "asia"],
+    "australia":                       ["australia"],
+    "australia x2":                    ["australia", "australia"],
+    "australia science":               ["australia", "science"],
+    "bear animals ii":                 ["bear", "animals-ii"],
+    "bird":                            ["bird"],
+    "bird x2":                         ["bird", "bird"],
+    "bird x3":                         ["bird", "bird", "bird"],
+    "europe":                          ["europe"],
+    "europe x2":                       ["europe", "europe"],
+    "herbivore x2":                    ["herbivore", "herbivore"],
+    "herbivore bear partner zoo":      ["herbivore", "bear", "partner-zoo"],
+    "partner zoo":                     ["partner-zoo"],
+    "predator x2 animals ii":          ["predator", "predator", "animals-ii"],
+    "predator x3":                     ["predator", "predator", "predator"],
+    "primate":                         ["primate"],
+    "primate x2 animals ii":           ["primate", "primate", "animals-ii"],
+    "primate x3":                      ["primate", "primate", "primate"],
+    "reptile x2":                      ["reptile", "reptile"],
+    "reptile x3":                      ["reptile", "reptile", "reptile"],
+    "science":                         ["science"],
+    "science x2":                      ["science", "science"],
+    "science x2 animals ii":           ["science", "science", "animals-ii"],
+    "sea animal":                      ["sea-animal"],
+    "university":                      ["university"],
+    "reputation 3":                    [],   # rep-only; rep_req extracted separately
+
+    # --- Sponsor Reqs cell values ---
+    "1 bird icon":                     ["bird"],
+    "1 herbavore icon":                ["herbivore"],  # spreadsheet typo
+    "1 predator icon":                 ["predator"],
+    "1 primate icon":                  ["primate"],
+    "1 reptile icon":                  ["reptile"],
+    "1 research icon":                 ["science"],
+    "2 partnership zoos":              ["partner-zoo", "partner-zoo"],
+    "2 research icons":                ["science", "science"],
+    "3 research icons":                ["science", "science", "science"],
+    "4 research icons":                ["science", "science", "science", "science"],
+    "2 science + 1 sea animal":        ["science", "science", "sea-animal"],
+    "kiosk":                           ["kiosk"],
+    "level ii sponsor card":           ["level-ii-sponsor"],
+    "level ii sponsor card, 6 reputation":   ["level-ii-sponsor"],
+    "level ii sponsor card; max 25 appeal":  ["level-ii-sponsor", "max-25-appeal"],
+    "max. 25 appeal":                  ["max-25-appeal"],
+    "sponsor ii":                      ["level-ii-sponsor"],
+    "sponsor ii + 1 americas + 6 reputation": ["level-ii-sponsor", "americas"],
+    "3 reputation":                    [],   # rep-only
+    "6 reputation":                    [],   # rep-only
 }
+
+# Matches `Reputation N` or `N Reputation` anywhere in the cell. The count
+# becomes `reputation_requirement`; the rest of the cell is looked up in
+# REQUIREMENT_LUT for its tag list.
+_REP_RE = re.compile(r"(?:reputation\s+(\d+)|(\d+)\s+reputation)", re.IGNORECASE)
 
 # Named abilities printed on animal cards (value after = canonical tag).
 ABILITY_NAME_MAP: dict[str, str] = {
@@ -314,67 +380,25 @@ def parse_continent_column(raw: Any) -> list[str]:
 def parse_reqs_column(raw: Any) -> tuple[list[str], int | None]:
     """Return (requires tags, reputation_requirement).
 
-    Requires tags duplicate for xN (e.g. Predator x3 → three 'predator').
+    The cell value is normalized (lowercased, whitespace collapsed) and looked
+    up directly in REQUIREMENT_LUT. Reputation thresholds are extracted by
+    `_REP_RE` independently of the LUT.
     """
     if raw is None:
         return [], None
-    s = str(raw).strip()
-    tags: list[str] = []
-    rep_req: int | None = None
+    key = _norm(str(raw))
+    if not key:
+        return [], None
 
-    for line in re.split(r"[\n]+", s):
-        line = line.strip()
-        if not line:
-            continue
-        low = _norm(line)
+    rep_match = _REP_RE.search(key)
+    rep_req = int(rep_match.group(1) or rep_match.group(2)) if rep_match else None
 
-        # Reputation N
-        m = re.match(r"reputation\s+(\d+)", low)
-        if m:
-            rep_req = int(m.group(1))
-            continue
+    tags = REQUIREMENT_LUT.get(key)
+    if tags is None:
+        print(f"WARN: unknown requirements string: {raw!r}", file=sys.stderr)
+        return [], rep_req
 
-        # Icon threshold like "Predator x3", "Asia x2", "Bird"
-        m = re.match(r"([a-z ]+?)\s*x\s*(\d+)\s*$", low)
-        if m:
-            name, count = m.group(1).strip(), int(m.group(2))
-            tag = _icon_name_to_tag(name)
-            if tag:
-                tags.extend([tag] * count)
-                continue
-
-        # Named requirement (partner zoo, animals II, university, etc.)
-        if low in REQS_TAG_MAP:
-            tags.append(REQS_TAG_MAP[low])
-            continue
-
-        # Plain icon with implicit count of 1 (e.g. "Bird", "Africa", "Sea Animal")
-        tag = _icon_name_to_tag(low)
-        if tag:
-            tags.append(tag)
-            continue
-
-        # Fallback — ignore, parser caller can inspect
-    return tags, rep_req
-
-
-def _icon_name_to_tag(name: str) -> str | None:
-    name = name.strip().lower()
-    if name in CATEGORY_TOKEN_TO_TAG:
-        return CATEGORY_TOKEN_TO_TAG[name]
-    if name in CONTINENT_MAP:
-        return CONTINENT_MAP[name]
-    if name == "science":
-        return "science"
-    if name == "research":
-        return "science"
-    if name == "water":
-        return "water"
-    if name == "rock":
-        return "rock"
-    if name in REQS_TAG_MAP:
-        return REQS_TAG_MAP[name]
-    return None
+    return list(tags), rep_req
 
 
 # ---------------------------------------------------------------------------
@@ -599,13 +623,6 @@ def read_sponsors(ws) -> list[dict]:
 
         # Parse requirements
         req_tags, rep_req = parse_reqs_column(reqs_raw)
-        # Split further on ';' and ','
-        if reqs_raw:
-            for seg in re.split(r"[;]+", str(reqs_raw)):
-                seg = seg.strip()
-                low = _norm(seg)
-                if low in REQS_TAG_MAP and REQS_TAG_MAP[low] not in req_tags:
-                    req_tags.append(REQS_TAG_MAP[low])
 
         # Parse provided icons
         provides = parse_provides(icons_gained_raw)

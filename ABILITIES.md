@@ -48,7 +48,6 @@ Tags used to mark that a card carries a particular scoring or cost icon. The num
 - `cp` — card has a printed conservation-points value.
 - `rep` — card has a printed reputation cost or reputation reward.
 - `l2` — card has a "release value 2" icon (higher release reward). (verify)
-- `science` — card has the science icon.
 
 ## Sponsor timing
 
@@ -72,12 +71,12 @@ Best-effort labels from the source — these describe what kind of effect a spon
 
 ## Threshold requirements
 
-- `reputation` — in `requires`: card has a minimum reputation-track threshold to play. The specific number, when known, goes in `reputation_requirement`; use this tag for cards whose threshold is printed but not yet captured numerically.
-- `partner-zoo` — in `requires`: card requires a partner zoo to play.
+- `partner-zoo` — in `requires`: card requires a partner zoo to play. For animal cards the partner zoo must be from the animal's origin continent (read the `continents` field on the same row); the continent is **not** restated in `requires`. Multiplicity = N partner zoos required.
 - `animals-ii` — in `requires`: card requires the level-II animal-action upgrade.
 - `level-ii-sponsor` — in `requires`: card requires the level-II sponsor-action upgrade.
 - `university` — in `requires`: card requires a university in the zoo.
 - `kiosk` — in `requires`: card requires a kiosk in the zoo.
+- `science` — science (research) icon. In `requires`: card requires N science icons in the zoo (multiplicity = N). In `provides`: sponsor grants a science icon. Also used as an `abilities` flag on sponsors that produce research icons.
 - `max-25-appeal` — in `requires`: card can only be played when appeal is ≤ 25.
 - `release-activity` — in `requires`: conservation project is resolved via the Release activity.
 - `partnership-activity` — in `requires`: conservation project is resolved via the Partnership activity.
