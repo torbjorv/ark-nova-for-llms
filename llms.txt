@@ -1,24 +1,17 @@
-# Ark Nova card database
+# Ark Nova card database — operating manual
 
-A queryable dataset of Ark Nova (Feuerland Spiele / Capstone Games) cards. Answer card questions by running SQL against `scripts/query.py`.
-
-## Setup
+**To answer a card question: clone this repo and run SQL through `scripts/query.py`. Do not try to answer from this file alone. Do not WebFetch `cards.jsonl` and parse it by hand — the data is meant to be queried, not read.**
 
 ```
-git clone https://github.com/torbjorv/ark-nova-for-llms.git
-cd ark-nova-for-llms
-```
-
-## Querying
-
-`scripts/query.py` runs SQL against the card data. Each invocation loads the data into an in-memory SQLite table named `cards`, runs your SQL, and writes the result as JSONL on stdout — one JSON object per row, with JSON-typed columns emitted as parsed JSON.
-
-```
+git clone https://github.com/torbjorv/ark-nova-for-llms.git && cd ark-nova-for-llms
 python scripts/query.py "<SQL>"
-python scripts/query.py - < query.sql
 ```
 
-Examples:
+`scripts/query.py` loads the card data into an in-memory SQLite table named `cards`, runs your SQL, and writes the result as JSONL on stdout — one JSON object per row, with JSON-typed columns emitted as parsed JSON. Use `python scripts/query.py - < query.sql` for long queries.
+
+The rest of this file is the SQL schema you write against (`cards` table), the SQLite JSON1 idioms for the array/object columns, the closed enums, and the small set of non-obvious answering rules.
+
+## Examples
 
 ```
 python scripts/query.py "SELECT id, name, appeal FROM cards WHERE type = 'animal' ORDER BY appeal DESC LIMIT 3"
