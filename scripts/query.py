@@ -11,7 +11,7 @@ Usage:
     echo "SELECT COUNT(*) AS n FROM cards" | python scripts/query.py -
 
 Output is JSONL on stdout, one result row per line. Columns whose values
-are JSON arrays/objects (e.g. `continents`, `ability_levels`) are emitted
+are JSON arrays/objects (e.g. `icons`, `ability_levels`) are emitted
 as parsed JSON, not as escaped strings.
 """
 
@@ -28,11 +28,9 @@ JSONL_PATH = REPO / "cards.jsonl"
 # Fields stored as JSON text in SQLite (lists / dicts in the source data).
 JSON_FIELDS = {
     "set",
-    "continents",
-    "categories",
+    "icons",
     "abilities",
     "requires",
-    "provides",
     "triggers",
     "ability_levels",
     "ability_targets",

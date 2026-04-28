@@ -20,12 +20,10 @@ REQUIRED_FIELDS = {
     "type": str,
     "rock_icons": int,
     "water_icons": int,
-    "continents": list,
-    "categories": list,
+    "icons": list,
     "size": (int, type(None)),
     "abilities": list,
     "requires": list,
-    "provides": list,
     "triggers": list,
     "appeal": (int, type(None)),
     "conservation_points": (int, type(None)),
@@ -51,8 +49,14 @@ REQUIRED_FIELDS = {
 
 SET_ENUM = {"base", "marine-worlds"}
 TYPE_ENUM = {"animal", "sponsor", "conservation-project", "final-scoring"}
-CONTINENT_ENUM = {"africa", "americas", "asia", "europe", "australia"}
-CATEGORY_ENUM = {"bear", "bird", "herbivore", "petting-zoo", "predator", "primate", "reptile", "sea-animal"}
+ICON_ENUM = {
+    # 5 continents
+    "africa", "americas", "asia", "europe", "australia",
+    # 8 animal categories
+    "bear", "bird", "herbivore", "petting-zoo", "predator", "primate", "reptile", "sea-animal",
+    # 3 named icons (sponsor-granted)
+    "rock", "water", "science",
+}
 TAG_LINE = re.compile(r"^\s*-\s+`([a-z0-9\-]+)`")
 
 
@@ -92,14 +96,11 @@ def check_row(row: dict, lineno: int, valid_tags: set[str]) -> list[str]:
         v = row.get(f)
         if isinstance(v, int) and v < 0:
             errors.append(f"{prefix}: `{f}` must be ≥ 0 (got {v})")
-    for c in row.get("continents", []) or []:
-        if c not in CONTINENT_ENUM:
-            errors.append(f"{prefix}: invalid continent `{c}`")
-    for c in row.get("categories", []) or []:
-        if c not in CATEGORY_ENUM:
-            errors.append(f"{prefix}: invalid category `{c}`")
+    for icon in row.get("icons", []) or []:
+        if icon not in ICON_ENUM:
+            errors.append(f"{prefix}: invalid icon `{icon}`")
 
-    for tag_field in ("abilities", "requires", "provides", "triggers"):
+    for tag_field in ("abilities", "requires", "triggers"):
         for tag in row.get(tag_field, []) or []:
             if tag not in valid_tags:
                 errors.append(f"{prefix}: `{tag_field}` tag `{tag}` not defined in ABILITIES.md")

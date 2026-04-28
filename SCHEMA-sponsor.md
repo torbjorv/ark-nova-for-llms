@@ -2,7 +2,7 @@
 
 Schema for cards with `"type": "sponsor"`. **80 cards** in the dataset (base + Marine Worlds).
 
-Sponsors are non-animal cards played for their effects. Each sponsor has a printed strength / level (the gating rule for which sponsors a player may play, controlled by their sponsor card on the action board) and an effect described in `text`. Effects decompose into `provides` icons and `triggers`.
+Sponsors are non-animal cards played for their effects. Each sponsor has a printed strength / level (the gating rule for which sponsors a player may play, controlled by their sponsor card on the action board) and an effect described in `text`. Effects decompose into `icons` granted on play and `triggers`.
 
 Read [SCHEMA.md](./SCHEMA.md) first for the global enums, the closed-vocabulary rule for tag fields, and the "every row contains every field" invariant.
 
@@ -25,15 +25,20 @@ Read [SCHEMA.md](./SCHEMA.md) first for the global enums, the closed-vocabulary 
 |---|---|---|
 | `strength` | integer or null | Sponsor strength / level. The player's current sponsor card sets the maximum strength they may play. `null` only if a sponsor genuinely has no printed strength (none in the current dataset; reserved for future cards). |
 
+### Icons granted on play
+
+| Field | Type | Description |
+|---|---|---|
+| `icons` | array of enum | Icons the sponsor *grants* to the zoo when played. Drawn from the global `icons` enum (continents, animal categories, plus `rock` / `water` / `science`). **Duplicates encode multiplicity.** `[]` if the sponsor's effect is purely procedural (not modelled as a discrete icon grant). |
+
 ### Tags
 
-`abilities`, `requires`, `provides`, `triggers` all draw exclusively from `ABILITIES.md`.
+`abilities`, `requires`, `triggers` all draw exclusively from `ABILITIES.md`.
 
 | Field | Type | Description |
 |---|---|---|
 | `abilities` | array of tag | Ability-keyword tags on the card itself (e.g. `["science"]` for the science-lab sponsor). **Duplicates encode multiplicity.** `[]` if none. |
 | `requires` | array of tag | Prereq tags — most commonly `level-ii-sponsor` / `level-iii-sponsor` gating tags, or named-icon prereqs. Duplicates allowed. `[]` if no prerequisites. |
-| `provides` | array of tag | Icons / effects the sponsor *grants* when played. **This is the sponsor-specific field.** Duplicates encode multiplicity. `[]` if the sponsor's effect is purely procedural (not modelled as a discrete icon-grant). |
 | `triggers` | array of tag | When the effect fires — typically a subset of `immediate`, `ongoing`, `end`, plus reactive triggers (e.g. `on-play-animal`). Duplicates allowed. `[]` if the sponsor has no fire-time semantics modelled. |
 
 ### Marine Worlds wave-trigger sponsors
@@ -58,8 +63,6 @@ These fields are part of every row but are **constant** on sponsor cards:
 |---|---|---|
 | `rock_icons` | `0` | animal |
 | `water_icons` | `0` | animal |
-| `continents` | `[]` | animal |
-| `categories` | `[]` | animal, conservation-project |
 | `size` | `null` | animal |
 | `appeal` | `null` | animal |
 | `conservation_points` | `null` | animal |
@@ -76,7 +79,7 @@ These fields are part of every row but are **constant** on sponsor cards:
 
 ### Activated sponsor — Science Lab (`AN-201`)
 
-Has all three trigger phases (immediate, ongoing, end), a level-II prereq, and provides a science icon:
+Has all three trigger phases (immediate, ongoing, end), a level-II prereq, and grants a science icon:
 
 ```json
 {
@@ -86,12 +89,10 @@ Has all three trigger phases (immediate, ongoing, end), a level-II prereq, and p
   "type": "sponsor",
   "rock_icons": 0,
   "water_icons": 0,
-  "continents": [],
-  "categories": [],
+  "icons": ["science"],
   "size": null,
   "abilities": ["science"],
   "requires": ["level-ii-sponsor"],
-  "provides": ["science"],
   "triggers": ["immediate", "ongoing", "end"],
   "appeal": null,
   "conservation_points": null,
@@ -128,7 +129,7 @@ Ongoing-only trigger (fires whenever a research icon is played):
   "type": "sponsor",
   "abilities": ["science"],
   "requires": [],
-  "provides": ["science"],
+  "icons": ["science"],
   "triggers": ["ongoing"],
   "strength": 5,
   "text": "Each time you play a research icon into your zoo, gain 1 reputation .",

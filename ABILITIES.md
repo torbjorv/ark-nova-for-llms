@@ -1,6 +1,8 @@
 # Tag Vocabulary
 
-Closed vocabulary for the `abilities`, `requires`, `provides`, and `triggers` arrays in `cards.jsonl`. Every tag used in the data must be defined here, with a one-line definition. `scripts/validate.py` enforces this.
+Closed vocabulary for the `abilities`, `requires`, and `triggers` arrays in `cards.jsonl`. Every tag used in the data must be defined here, with a one-line definition. `scripts/validate.py` enforces this.
+
+The `icons` field uses a separate, smaller closed vocabulary (5 continents + 8 animal categories + `rock` / `water` / `science`) listed in `SCHEMA.md`. The icon tags also appear in this file so that they can be referenced from `requires` (e.g. `["predator","predator"]` for "needs 2 predator icons in zoo").
 
 This vocabulary was bootstrapped from the class tokens in the [ssimeonoff Ark Nova cards page](https://github.com/ssimeonoff/ssimeonoff.github.io/blob/master/ark-nova.html). Tags that are icons/keywords on actual cards (as opposed to metadata flags) are grouped for readability. **Some definitions are best-effort and marked `(verify)` — they should be confirmed against the real card text before the dataset is considered authoritative.** When in doubt, read the printed card.
 
@@ -10,7 +12,7 @@ Format: `` `tag-name` — definition ``. Tags use `kebab-case`.
 
 ## Continent icons
 
-Used in `abilities` to record a continent icon on the card, and in `requires` / `provides` when another card needs or grants such an icon.
+Appear in the `icons` field (printed continent icons on animals; granted continent icons on sponsors), and in `requires` when a card needs N icons of that continent in the zoo.
 
 - `africa` — Africa continent icon.
 - `americas` — Americas continent icon.
@@ -20,14 +22,18 @@ Used in `abilities` to record a continent icon on the card, and in `requires` / 
 
 ## Enclosure-requirement icons
 
-Used in `requires` / `provides` for rock- or water-icon thresholds printed on sponsor cards and elsewhere. **Per-animal-card icon counts live in the structured `rock_icons` / `water_icons` fields, not here** — these tags are for sponsor / project effects that *reference* those icons (e.g. "gain 1 CP per 6 water icons in your zoo").
+Two distinct uses:
+- In `icons`: a sponsor that *grants* a rock or water icon to the zoo when played (e.g. Baboon Rock has `icons: ["primate","rock"]`).
+- In `requires`: a card prerequisite phrased as "needs N rock/water icons in the zoo".
 
-- `water` — water-requirement icon.
-- `rock` — rock-requirement icon.
+**Per-animal-card enclosure icon counts live in the structured `rock_icons` / `water_icons` integer fields, not as `icons` entries** — those integers are the printed enclosure requirements, distinct from icons-in-zoo.
+
+- `water` — water icon.
+- `rock` — rock icon.
 
 ## Animal categories
 
-The 8 official animal categories from the rulebook (base manual page 13: *"There are 7 animal categories in Ark Nova"*; Marine Worlds adds Sea Animals as the 8th). On animal and conservation-project cards the printed category icon(s) live in the structured `categories` field — **not** in `abilities`. These tags also appear in `requires` (prereq for N category icons in the zoo) and `provides` (sponsors granting category icons).
+The 8 official animal categories from the rulebook (base manual page 13: *"There are 7 animal categories in Ark Nova"*; Marine Worlds adds Sea Animals as the 8th). On animal and conservation-project cards the printed category icon(s) live in the structured `icons` field — **not** in `abilities`. These tags also appear in `requires` (prereq for N category icons in the zoo) and in `icons` on sponsors that grant category icons.
 
 - `bear` — bear category icon. (Subcategory of herbivore/predator per the manual, but treated as its own category for game purposes.)
 - `bird` — bird category icon.
@@ -71,12 +77,12 @@ Best-effort labels from the source — these describe what kind of effect a spon
 
 ## Threshold requirements
 
-- `partner-zoo` — in `requires`: card requires a partner zoo to play. For animal cards the partner zoo must be from the animal's origin continent (read the `continents` field on the same row); the continent is **not** restated in `requires`. Multiplicity = N partner zoos required.
+- `partner-zoo` — in `requires`: card requires a partner zoo to play. For animal cards the partner zoo must be from the animal's origin continent (read the continent value(s) in the `icons` field on the same row); the continent is **not** restated in `requires`. Multiplicity = N partner zoos required.
 - `animals-ii` — in `requires`: card requires the level-II animal-action upgrade.
 - `level-ii-sponsor` — in `requires`: card requires the level-II sponsor-action upgrade.
 - `university` — in `requires`: card requires a university in the zoo.
 - `kiosk` — in `requires`: card requires a kiosk in the zoo.
-- `science` — science (research) icon. In `requires`: card requires N science icons in the zoo (multiplicity = N). In `provides`: sponsor grants a science icon. Also used as an `abilities` flag on sponsors that produce research icons.
+- `science` — science (research) icon. In `requires`: card requires N science icons in the zoo (multiplicity = N). In `icons`: sponsor grants a science icon when played. Also used as an `abilities` flag on sponsors that produce research icons (currently redundant with `icons` membership; preserved for parity with how other ability keywords are tagged).
 - `max-25-appeal` — in `requires`: card can only be played when appeal is ≤ 25.
 - `release-activity` — in `requires`: conservation project is resolved via the Release activity.
 - `partnership-activity` — in `requires`: conservation project is resolved via the Partnership activity.

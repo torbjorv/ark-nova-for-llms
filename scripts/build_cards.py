@@ -45,8 +45,6 @@ CATEGORY_TOKEN_TO_TAG = {
     "sea animal": "sea-animal",
 }
 
-CATEGORY_TAGS = set(CATEGORY_TOKEN_TO_TAG.values())
-
 CONTINENT_MAP = {
     "africa": "africa",
     "americas": "americas",
@@ -264,13 +262,13 @@ BASE_ORIGINAL_OVERRIDES: dict[str, dict] = {
     "AN-101": {},
     "AN-102": {},
     "AN-131": {},
-    # Sponsors — six are icon-only; Sea Turtle Tank had its provides extended
+    # Sponsors — six are icon-only; Sea Turtle Tank had its icons extended
     "AN-207": {},
     "AN-208": {},
     "AN-225": {},
     "AN-226": {},
     "AN-227": {},
-    "AN-250": {"provides": ["reptile", "water"]},
+    "AN-250": {"icons": ["reptile", "water"]},
     "AN-261": {"name": "Guided School Tours"},  # marine reprint has typo "Toours"
 }
 
@@ -576,8 +574,8 @@ def parse_bonuses(raw: Any) -> tuple[int | None, int | None, int | None]:
 # ---------------------------------------------------------------------------
 
 EMPTY = {
-    "rock_icons": 0, "water_icons": 0, "continents": [], "categories": [], "size": None,
-    "abilities": [], "requires": [], "provides": [], "triggers": [],
+    "rock_icons": 0, "water_icons": 0, "icons": [], "size": None,
+    "abilities": [], "requires": [], "triggers": [],
     "appeal": None, "conservation_points": None, "strength": None,
     "reputation_requirement": None, "bonus_reward": None, "money_cost": None,
     "text": "", "notes": None,
@@ -660,12 +658,10 @@ def read_animals(ws) -> list[dict]:
             type="animal",
             rock_icons=enc["rock_icons"],
             water_icons=enc["water_icons"],
-            continents=continents,
-            categories=categories,
+            icons=categories + continents,
             size=enc["size"],
             abilities=abilities,
             requires=req_tags,
-            provides=[],
             triggers=[],
             appeal=appeal,
             conservation_points=cp,
@@ -719,8 +715,8 @@ def read_sponsors(ws) -> list[dict]:
         # Parse requirements
         req_tags, rep_req = parse_reqs_column(reqs_raw)
 
-        # Parse provided icons
-        provides = parse_provides(icons_gained_raw)
+        # Parse granted icons
+        icons = parse_icons_gained(icons_gained_raw)
 
         triggers = []
         if instant:
@@ -737,7 +733,7 @@ def read_sponsors(ws) -> list[dict]:
 
         abilities: list[str] = []
         # Tag science/research sponsors with `science` ability when they produce Research icons.
-        if provides and any(p == "science" for p in provides):
+        if icons and any(i == "science" for i in icons):
             abilities.append("science")
 
         card = new_card(
@@ -747,7 +743,7 @@ def read_sponsors(ws) -> list[dict]:
             type="sponsor",
             strength=strength if isinstance(strength, int) else None,
             requires=req_tags,
-            provides=provides,
+            icons=icons,
             triggers=triggers,
             reputation_requirement=rep_req,
             text=text,
@@ -759,12 +755,12 @@ def read_sponsors(ws) -> list[dict]:
     return cards
 
 
-def parse_provides(raw: Any) -> list[str]:
+def parse_icons_gained(raw: Any) -> list[str]:
     """Parse 'Icons Gained' column into a list of tag, duplicated for multiplicity."""
     if raw is None:
         return []
     s = str(raw)
-    provides: list[str] = []
+    icons: list[str] = []
     # Strip parenthesised alternates
     s = re.sub(r"\([^)]*\)", "", s)
     for part in re.split(r"[+,\n]+", s):
@@ -796,8 +792,8 @@ def parse_provides(raw: Any) -> list[str]:
         else:
             tag = None
         if tag:
-            provides.extend([tag] * count)
-    return provides
+            icons.extend([tag] * count)
+    return icons
 
 
 def read_conservation(ws) -> list[dict]:
@@ -839,7 +835,6 @@ def read_conservation(ws) -> list[dict]:
         # Continent / animal-category requirements from the free-text field
         extra_tags = _infer_project_requires(requirements_text)
         requires.extend(extra_tags)
-        categories = _project_categories(requires)
 
         is_mw = (mw_flag == "MW")
         prefix = "MW" if is_mw else "AN"
@@ -849,12 +844,14 @@ def read_conservation(ws) -> list[dict]:
         text = requirements_text or ""
         notes = None
 
+        # Conservation-project cards display an icon, but it does not count
+        # toward zoo-icon totals — the prerequisite is captured by `requires`.
+        # Leaving `icons` empty (default from EMPTY) avoids double-counting.
         card = new_card(
             id=cid,
             name=name.replace("*", "").strip() if name else name,
             set=set_value,
             type="conservation-project",
-            categories=categories,
             requires=requires,
             triggers=triggers,
             bonus_reward=bonus_reward,
@@ -911,13 +908,6 @@ def _infer_project_requires(text: str | None) -> list[str]:
             tags.append(tag)
             seen.add(tag)
     return tags
-
-
-def _project_categories(requires_tags: list[str]) -> list[str]:
-    """The project card prints its category icon. If `requires` includes a
-    category tag (because the project demands those icons in the zoo), the
-    same category appears on the project card itself."""
-    return [t for t in requires_tags if t in CATEGORY_TAGS]
 
 
 def parse_tier(raw: Any) -> list[int]:

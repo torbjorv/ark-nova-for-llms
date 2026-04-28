@@ -16,9 +16,14 @@ The rest of this file is the SQL schema you write against (`cards` table), the S
 ```
 python scripts/query.py "SELECT id, name, appeal FROM cards WHERE type = 'animal' ORDER BY appeal DESC LIMIT 3"
 
+# Bear animals from Europe — both icons live in the unified `icons` field
 python scripts/query.py "SELECT id, name FROM cards \
-  WHERE EXISTS (SELECT 1 FROM json_each(continents) WHERE value = 'europe') \
-    AND EXISTS (SELECT 1 FROM json_each(categories) WHERE value = 'bear')"
+  WHERE EXISTS (SELECT 1 FROM json_each(icons) WHERE value = 'europe') \
+    AND EXISTS (SELECT 1 FROM json_each(icons) WHERE value = 'bear')"
+
+# Every card that contributes a primate icon to your zoo (animals + sponsors)
+python scripts/query.py "SELECT id, name, type FROM cards \
+  WHERE EXISTS (SELECT 1 FROM json_each(icons) WHERE value = 'primate')"
 ```
 
 If you can't run shell commands yourself, write SQL against the schema below and ask the user to run it through `query.py`.
@@ -56,16 +61,14 @@ Single table `cards`. Every row has every column.
 
 ### JSON-typed columns
 
-Stored as JSON text; query with the JSON1 functions. **Duplicates encode multiplicity** in `continents`, `categories`, `abilities`, `requires`, `provides` — don't dedupe when counting icons.
+Stored as JSON text; query with the JSON1 functions. **Duplicates encode multiplicity** in `icons`, `abilities`, `requires` — don't dedupe when counting icons.
 
 | column | shape | example |
 |---|---|---|
 | `set` | array of TEXT | `["base","marine-worlds"]`, `["base"]`, `["marine-worlds"]` — see *Set semantics* below |
-| `continents` | array of TEXT | `["europe"]`, `["africa","africa"]` |
-| `categories` | array of TEXT | `["predator","predator"]` |
+| `icons` | array of TEXT | `["primate","primate","africa"]` (animal), `["science"]` (sponsor), `[]` (project / final-scoring). Unified vocabulary: continents, animal categories, plus `rock` / `water` / `science`. See *Icons* below. |
 | `abilities` | array of TEXT | `["sprint"]` |
 | `requires` | array of TEXT | `["bear","animals-ii"]` |
-| `provides` | array of TEXT | `["science"]` |
 | `triggers` | array of TEXT | `["ongoing","end"]` |
 | `ability_levels` | object: tag → INTEGER | `{"sprint": 3}` |
 | `ability_targets` | object: tag → TEXT | `{"iconic": "europe"}` |
@@ -101,19 +104,32 @@ Note: `set` is a SQLite reserved word — quote it as `"set"` in SQL.
 ### Enums
 
 ```
-type:       animal | sponsor | conservation-project | final-scoring
-continents: africa | americas | asia | europe | australia
-categories: bear | bird | herbivore | petting-zoo | predator | primate | reptile | sea-animal
-set:        base | marine-worlds   (each appears as one or more elements of the `set` array)
+type:  animal | sponsor | conservation-project | final-scoring
+icons: africa | americas | asia | europe | australia        # 5 continents
+       | bear | bird | herbivore | petting-zoo | predator
+       | primate | reptile | sea-animal                     # 8 animal categories
+       | rock | water | science                             # 3 named icons (sponsor-granted)
+set:   base | marine-worlds   (each appears as one or more elements of the `set` array)
 ```
 
-Tag values for `abilities`, `requires`, `provides`, and `triggers` are a closed vocabulary defined in `ABILITIES.md`. **Don't invent tags.** If a user references a tag not in `ABILITIES.md`, tell them so and suggest the closest real one. To list the live vocabulary in-database: `SELECT DISTINCT value FROM cards, json_each(cards.abilities)` (and the same for the other three columns).
+Tag values for `abilities`, `requires`, and `triggers` are a closed vocabulary defined in `ABILITIES.md`. **Don't invent tags.** If a user references a tag not in `ABILITIES.md`, tell them so and suggest the closest real one. To list the live vocabulary in-database: `SELECT DISTINCT value FROM cards, json_each(cards.abilities)` (and the same for the other columns).
+
+### Icons
+
+`icons` is the unified "what does this card contribute to the zoo board" field. Game mechanics — conservation-project requirements, sponsor prerequisites, final-scoring tallies — talk about *icons in your zoo* rather than animals-vs-sponsors, so a single field captures the answer regardless of card type:
+
+- **animal** — printed continent + category icons (count toward zoo totals once played).
+- **sponsor** — icons granted when played (count toward zoo totals).
+- **conservation-project** — always `[]`. The icon shown on a project card is decorative; the prerequisite the project *demands* lives in `requires`. Don't union project cards into zoo-icon totals.
+- **final-scoring** — always `[]`.
+
+To answer "icons in zoo" questions, restrict to `type IN ('animal','sponsor')`. Use the `type` column when you specifically need to distinguish animals from sponsors (rare for icon-counting queries; more common for "list animals" / "list sponsors" framing).
 
 ## How to answer queries
 
 1. **Filter on structured columns first.** Use `text` only as a fallback for rulings / interaction flavor, and say so when you do.
-2. **Animal categories live in `categories`, not `abilities`.** "Europe + bear" is `EXISTS (... continents = 'europe')` AND `EXISTS (... categories = 'bear')`.
-3. **Sea animals** are filtered as `categories` membership of `'sea-animal'` (and/or `aquarium_size IS NOT NULL`). There is no "marine" enclosure-icon — `rock_icons` and `water_icons` stay separate integers.
+2. **Icons of any kind live in `icons`, not `abilities`.** "Europe + bear" is `EXISTS (... icons = 'europe')` AND `EXISTS (... icons = 'bear')`. Animal abilities like `sprint` / `venom` are in `abilities`.
+3. **Sea animals** are filtered as `icons` membership of `'sea-animal'` (and/or `aquarium_size IS NOT NULL`). There is no "marine" enclosure-icon — `rock_icons` and `water_icons` stay separate integers.
 4. **Enclosure fit:** to find animals placeable in a given enclosure kind, filter on the matching `*_size` column being non-null.
 5. **Report counts with the matching `id — name` list** so the user can verify.
 6. **Nulls / `[]` / `{}` mean "does not apply"**, not "unknown." Don't guess at blanks; say "not captured in this dataset."

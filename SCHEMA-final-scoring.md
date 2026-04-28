@@ -34,7 +34,7 @@ Final-scoring cards are extremely sparse: aside from the common identity fields 
 
 | Field | Constant |
 |---|---|
-| `continents`, `categories`, `abilities`, `requires`, `provides`, `triggers` | `[]` |
+| `icons`, `abilities`, `requires`, `triggers` | `[]` |
 | `rock_icons`, `water_icons` | `0` |
 | `size`, `appeal`, `conservation_points`, `strength`, `reputation_requirement`, `bonus_reward`, `money_cost` | `null` |
 | `standard_size`, `reptile_house_size`, `large_bird_aviary_size`, `petting_zoo_size`, `aquarium_size`, `large_reptile_house_size`, `reef_ability` | `null` |
@@ -55,12 +55,10 @@ The category being scored is captured in `name` and `text` (e.g. "Large Animal Z
   "type": "final-scoring",
   "rock_icons": 0,
   "water_icons": 0,
-  "continents": [],
-  "categories": [],
+  "icons": [],
   "size": null,
   "abilities": [],
   "requires": [],
-  "provides": [],
   "triggers": [],
   "appeal": null,
   "conservation_points": null,

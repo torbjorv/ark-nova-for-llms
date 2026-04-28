@@ -5,9 +5,9 @@ Structured data for Ark Nova board game cards, optimized for querying by Claude.
 ## Data and schema
 
 - `cards.jsonl` — one card per line, all structured fields + full text. This is the data.
-- `SCHEMA.md` — index, global enums (`set`, `type`, `continents`), the rock/water icon convention, design rules.
+- `SCHEMA.md` — index, global enums (`set`, `type`, `icons`), the rock/water icon convention, design rules.
 - `SCHEMA-animal.md`, `SCHEMA-sponsor.md`, `SCHEMA-conservation-project.md`, `SCHEMA-final-scoring.md` — per-type field semantics. Each lists both the fields applicable to that type and the fields that are constant (always null/empty) on that type, so the contract for one card type can be reviewed in isolation.
-- `ABILITIES.md` — the closed vocabulary of ability / requires / provides / triggers tags, each with a one-line definition.
+- `ABILITIES.md` — the closed vocabulary of ability / requires / triggers tags, each with a one-line definition.
 - `sets/*.txt` — card-ID membership per set.
 
 ## Authoritative sources

@@ -40,21 +40,32 @@ The card's printing source (which physical box it came from) is encoded in the `
 animal | sponsor | conservation-project | final-scoring
 ```
 
-### `continents`
-Five continent icons. Use `[]` for cards with no continent attribution. Duplicates encode multiplicity (e.g. `["africa","africa"]` = Africa ×2).
+### `icons`
+
+The unified "icons this card contributes to your zoo when in play". A single array, populated on animals, sponsors, and conservation-projects (always `[]` on final-scoring). Duplicates encode multiplicity (e.g. `["primate","primate"]` = double-primate; `["africa","africa"]` = Africa ×2).
+
+Closed vocabulary (16 values):
 
 ```
+# 5 continents
 africa | americas | asia | europe | australia
-```
 
-### `categories`
-The 8 official animal categories from the rulebook (base manual page 13 lists 7; Marine Worlds adds `sea-animal`). Used on animal and conservation-project cards to record category icons printed on the card itself. `[]` for cards with no category icon. Duplicates encode multiplicity.
-
-```
+# 8 animal categories (base manual lists 7; Marine Worlds adds sea-animal)
 bear | bird | herbivore | petting-zoo | predator | primate | reptile | sea-animal
+
+# 3 named icons (sponsor-granted)
+rock | water | science
 ```
 
-The same tag names appear in `requires` (e.g. `["predator","predator"]` = needs 2 predator icons in zoo) and in `provides` on sponsor cards (icons granted on play). The `categories` field is the per-card "what icons are printed here" list; `requires` / `provides` reference those icons in zoo-state context.
+What the field represents per type:
+- **animal** — printed continent + category icons on the card itself.
+- **sponsor** — icons the sponsor *grants* when played (primate, rock, science, etc.).
+- **conservation-project** — always `[]`. Project cards print a category/continent icon for visual cueing, but it does **not** count toward zoo-icon totals; the prerequisite the project demands lives in `requires`.
+- **final-scoring** — always `[]`.
+
+Game mechanics that talk about "X icons in your zoo" — conservation-project requirements, sponsor prerequisites, final-scoring tallies — are answered by counting matching values across this field over the cards in a player's zoo (animals + sponsors). The same tag names appear in `requires` (e.g. `["predator","predator"]` = needs 2 predator icons in zoo).
+
+The `type` column distinguishes "is this card an animal vs. a sponsor" when that orthogonal axis matters; `icons` does not encode it.
 
 ## Enclosure-requirement icons
 
@@ -63,18 +74,19 @@ The Ark Nova rulebook talks about cards carrying "1 or 2 rock and/or water icons
 - `rock_icons` (integer ≥ 0) — number of rock icons printed on the card.
 - `water_icons` (integer ≥ 0) — number of water icons printed on the card.
 
-`0` means the card has no icon of that kind. `["water","water"]` from the legacy schema is now `water_icons: 2`.
+`0` means the card has no icon of that kind.
 
-There is no "marine" enclosure-requirement icon. Sea Animals are an animal *category* (captured by `"sea-animal"` in the `categories` field on animal cards and by the `aquarium_size` field for placement), not an enclosure requirement. A sea animal that also needs rock in its aquarium will have `rock_icons: 1` *and* `"sea-animal"` in `categories`.
+These are **separate** from the `icons` array — they're enclosure requirements, not icons-in-zoo. A sponsor that *grants* a rock icon to the zoo (e.g. Baboon Rock) puts `"rock"` in its `icons` array. An animal whose enclosure requires rock has `rock_icons: 1` (or `2`).
+
+There is no "marine" enclosure-requirement icon. Sea Animals are an animal *category* (captured by `"sea-animal"` in the `icons` field on animal cards and by the `aquarium_size` field for placement), not an enclosure requirement. A sea animal that also needs rock in its aquarium will have `rock_icons: 1` *and* `"sea-animal"` in `icons`.
 
 ## Tag fields
 
-`abilities`, `requires`, `provides`, `triggers` each draw from the closed vocabulary in [`ABILITIES.md`](./ABILITIES.md). Each tag must be defined there before it can appear in a row. The validator enforces this.
+`abilities`, `requires`, `triggers` each draw from the closed vocabulary in [`ABILITIES.md`](./ABILITIES.md). Each tag must be defined there before it can appear in a row. The validator enforces this.
 
 The semantics differ by tag-field role:
-- `abilities` — ability keywords printed on the card itself (e.g. `sprint`, `venom`, `inventive`). Animal-category icons are **not** here — they live in `categories` (see above).
-- `requires` — prerequisite tags that must be satisfied to play / support / activate.
-- `provides` — icons / effects the card *grants* when played (sponsor-specific).
+- `abilities` — ability keywords printed on the card itself (e.g. `sprint`, `venom`, `inventive`). Animal-category icons are **not** here — they live in the `icons` field above.
+- `requires` — prerequisite tags that must be satisfied to play / support / activate. Many `requires` values reference the same tag names that appear in `icons` (e.g. `requires: ["predator","predator"]` checks for two predator icons in the zoo).
 - `triggers` — when the card's effect fires (`immediate`, `ongoing`, `end`, plus reactive triggers).
 
 Per-type schemas document which of these roles apply to which card types.
@@ -83,9 +95,9 @@ Per-type schemas document which of these roles apply to which card types.
 
 1. **If a user might filter on it, it's a structured field or tag — not prose.** When a card has a mechanic that isn't yet captured structurally, extend the schema or add a tag, then re-tag affected rows.
 2. **Tag vocabularies are closed.** Adding a tag means editing `ABILITIES.md` first.
-3. **Enums are closed too.** Don't sneak a new `type`, `set`, or `continent` value into a row without adding it here.
+3. **Enums are closed too.** Don't sneak a new `type`, `set`, or `icons` value into a row without adding it here.
 4. **Nulls over omissions.** Every field is always present.
-5. **Duplicates encode multiplicity** in `continents`, `abilities`, `requires`, and `provides`. Don't collapse them. (Rock / water icon counts are stored as integers, not duplicated tags.)
+5. **Duplicates encode multiplicity** in `icons`, `abilities`, `requires`. Don't collapse them. (Rock / water enclosure-requirement icon counts are stored as integers, not duplicated tags.)
 
 ## Validation
 

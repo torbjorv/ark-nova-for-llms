@@ -34,16 +34,9 @@ The validator enforces matching lengths when both arrays are non-empty, and that
 
 | Field | Type | Description |
 |---|---|---|
-| `categories` | array of enum | Animal-category icons printed on the project card itself (e.g. the *Reptiles* project shows a reptile icon). Drawn from the global `categories` enum. `[]` for projects with no printed category icon. |
 | `requires` | array of tag | Prereq tags — typically a category icon (continent, animal category, or `rock` / `water`) the player must have in their zoo. Duplicates allowed. `[]` if the project's prerequisite isn't expressible as a tag. |
 | `triggers` | array of tag | When the project's effect / scoring fires (e.g. `end` for end-of-game projects). `[]` for the standard mid-game support path that fires on the support action. |
 | `abilities` | array of tag | Ability keywords on the project itself (used by a small number of projects whose effect maps to a known ability keyword). `[]` for typical projects. |
-
-### Optional iconography (rare)
-
-| Field | Type | Description |
-|---|---|---|
-| `continents` | array of enum | Continent icons; almost always `[]`. (The project's continent prerequisite is encoded in `requires`, not `continents`.) |
 
 ### Card-wide bonus reward
 
@@ -57,6 +50,7 @@ A reward that fires once per support, on top of the slot-specific `tier_rewards`
 
 | Field | Constant | Used by |
 |---|---|---|
+| `icons` | `[]` | animal, sponsor (the icon printed on a project card is decorative and does **not** count toward zoo-icon totals — the project's prerequisite goes in `requires`) |
 | `rock_icons` | `0` | animal |
 | `water_icons` | `0` | animal |
 | `size` | `null` | animal |
@@ -65,7 +59,6 @@ A reward that fires once per support, on top of the slot-specific `tier_rewards`
 | `strength` | `null` | sponsor |
 | `reputation_requirement` | `null` | animal |
 | `money_cost` | `null` | animal (projects are supported via the action, not bought) |
-| `provides` | `[]` | sponsor |
 | `standard_size`, `reptile_house_size`, `large_bird_aviary_size`, `petting_zoo_size`, `aquarium_size`, `large_reptile_house_size` | `null` | animal |
 | `reef_ability` | `null` | animal |
 | `wave_icon` | `false` | animal, sponsor |
@@ -85,12 +78,10 @@ Standard tiered project: 5 Africa icons → 5 CP, 4 → 3 CP, 2 → 2 CP. Prereq
   "type": "conservation-project",
   "rock_icons": 0,
   "water_icons": 0,
-  "continents": [],
-  "categories": [],
+  "icons": [],
   "size": null,
   "abilities": [],
   "requires": ["collection-activity", "africa"],
-  "provides": [],
   "triggers": [],
   "appeal": null,
   "conservation_points": null,
@@ -125,7 +116,7 @@ Marine Worlds management plans have no escalating threshold ladder — every slo
   "name": "Predator Management Plan",
   "set": ["marine-worlds"],
   "type": "conservation-project",
-  "categories": ["predator"],
+  "icons": [],
   "requires": ["collection-activity", "predator", "predator"],
   "triggers": [],
   "bonus_reward": null,
