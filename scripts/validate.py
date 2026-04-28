@@ -16,7 +16,7 @@ REPO = Path(__file__).resolve().parent.parent
 REQUIRED_FIELDS = {
     "id": str,
     "name": str,
-    "set": list,
+    "games": list,
     "type": str,
     "rock_icons": int,
     "water_icons": int,
@@ -47,7 +47,7 @@ REQUIRED_FIELDS = {
     "tier_rewards": list,
 }
 
-SET_ENUM = {"base", "marine-worlds"}
+GAMES_ENUM = {"base", "marine-worlds"}
 TYPE_ENUM = {"animal", "sponsor", "conservation-project", "final-scoring"}
 ICON_ENUM = {
     # 5 continents
@@ -81,14 +81,14 @@ def check_row(row: dict, lineno: int, valid_tags: set[str]) -> list[str]:
         if not isinstance(value, expected):
             errors.append(f"{prefix}: field `{field}` has wrong type ({type(value).__name__})")
 
-    if "set" in row and isinstance(row["set"], list):
-        if not row["set"]:
-            errors.append(f"{prefix}: `set` must be non-empty")
-        if len(row["set"]) != len(set(row["set"])):
-            errors.append(f"{prefix}: `set` has duplicates: {row['set']}")
-        for s in row["set"]:
-            if s not in SET_ENUM:
-                errors.append(f"{prefix}: invalid `set` element `{s}`")
+    if "games" in row and isinstance(row["games"], list):
+        if not row["games"]:
+            errors.append(f"{prefix}: `games` must be non-empty")
+        if len(row["games"]) != len(set(row["games"])):
+            errors.append(f"{prefix}: `games` has duplicates: {row['games']}")
+        for s in row["games"]:
+            if s not in GAMES_ENUM:
+                errors.append(f"{prefix}: invalid `games` element `{s}`")
     if "type" in row and row["type"] not in TYPE_ENUM:
         errors.append(f"{prefix}: invalid `type` value `{row['type']}`")
 

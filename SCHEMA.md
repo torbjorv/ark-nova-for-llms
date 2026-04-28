@@ -17,9 +17,9 @@ This document holds the cross-type pieces: global enums, the closed-vocabulary r
 
 ## Global enums
 
-### `set`
+### `games`
 
-Stored as a JSON array of strings, listing the **deck configurations** the card appears in (not a single "this came from product X" label). Element values:
+Stored as a JSON array of strings, listing the **game configurations** the card appears in (not a single "this came from product X" label). Element values:
 
 ```
 base | marine-worlds
@@ -27,13 +27,13 @@ base | marine-worlds
 
 Allowed combinations and what they mean:
 
-| `set` value | meaning |
+| `games` value | meaning |
 |---|---|
-| `["base", "marine-worlds"]` | base card with no marine errata — in both pure-base and base+marine decks |
-| `["base"]` | base card that the Marine Worlds expansion replaces with errata — only in pure-base decks |
-| `["marine-worlds"]` | either a new marine card or the marine errata replacement — only in base+marine decks |
+| `["base", "marine-worlds"]` | base card with no marine errata — in both pure-base and base+marine games |
+| `["base"]` | base card that the Marine Worlds expansion replaces with errata — only in pure-base games |
+| `["marine-worlds"]` | either a new marine card or the marine errata replacement — only in base+marine games |
 
-The card's printing source (which physical box it came from) is encoded in the `id` prefix (`AN-` = base box, `MW-` = marine box), not in `set`.
+The card's printing source (which physical box it came from) is encoded in the `id` prefix (`AN-` = base box, `MW-` = marine box), not in `games`.
 
 ### `type`
 ```
@@ -95,7 +95,7 @@ Per-type schemas document which of these roles apply to which card types.
 
 1. **If a user might filter on it, it's a structured field or tag — not prose.** When a card has a mechanic that isn't yet captured structurally, extend the schema or add a tag, then re-tag affected rows.
 2. **Tag vocabularies are closed.** Adding a tag means editing `ABILITIES.md` first.
-3. **Enums are closed too.** Don't sneak a new `type`, `set`, or `icons` value into a row without adding it here.
+3. **Enums are closed too.** Don't sneak a new `type`, `games`, or `icons` value into a row without adding it here.
 4. **Nulls over omissions.** Every field is always present.
 5. **Duplicates encode multiplicity** in `icons`, `abilities`, `requires`. Don't collapse them. (Rock / water enclosure-requirement icon counts are stored as integers, not duplicated tags.)
 

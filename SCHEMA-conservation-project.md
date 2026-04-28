@@ -14,7 +14,7 @@ Read [SCHEMA.md](./SCHEMA.md) first for the global enums, the closed-vocabulary 
 |---|---|---|
 | `id` | string | Stable unique ID. |
 | `name` | string | Card name as printed. |
-| `set` | array of enum | Non-empty subset of the global `set` enum. See SCHEMA.md for set semantics. |
+| `games` | array of enum | Non-empty subset of the global `games` enum. See SCHEMA.md for `games` semantics. |
 | `type` | const | Always `"conservation-project"` for cards in this schema. |
 | `text` | string | Full verbatim card text describing the project's prerequisite. `""` only for trivial cases. |
 | `notes` | string or null | Optional rulings / FAQ refs. `null` if none. |
@@ -74,7 +74,7 @@ Standard tiered project: 5 Africa icons → 5 CP, 4 → 3 CP, 2 → 2 CP. Prereq
 {
   "id": "AN-103",
   "name": "Africa",
-  "set": ["base", "marine-worlds"],
+  "games": ["base", "marine-worlds"],
   "type": "conservation-project",
   "rock_icons": 0,
   "water_icons": 0,
@@ -114,7 +114,7 @@ Marine Worlds management plans have no escalating threshold ladder — every slo
 {
   "id": "MW-134",
   "name": "Predator Management Plan",
-  "set": ["marine-worlds"],
+  "games": ["marine-worlds"],
   "type": "conservation-project",
   "icons": [],
   "requires": ["collection-activity", "predator", "predator"],

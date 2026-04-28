@@ -4,7 +4,7 @@ Schema for cards with `"type": "animal"`. **160 cards** in the dataset (base + M
 
 Animals are creature cards placed into enclosures. They contribute appeal and ability icons; some award conservation points or release-bonus reputation; Marine Worlds animals carry a wave icon and/or a reef payoff.
 
-Read [SCHEMA.md](./SCHEMA.md) first for the global enums (`set`, `type`, `icons`), the rock/water icon convention, the closed-vocabulary rule for tag fields, and the "every row contains every field" invariant.
+Read [SCHEMA.md](./SCHEMA.md) first for the global enums (`games`, `type`, `icons`), the rock/water icon convention, the closed-vocabulary rule for tag fields, and the "every row contains every field" invariant.
 
 ## Fields
 
@@ -14,7 +14,7 @@ Read [SCHEMA.md](./SCHEMA.md) first for the global enums (`set`, `type`, `icons`
 |---|---|---|
 | `id` | string | Stable unique ID (`AN-###`, `MW-###`, `ZM-###`, `PR-###`). |
 | `name` | string | Card name as printed. |
-| `set` | array of enum | Non-empty subset of the global `set` enum. See SCHEMA.md for set semantics. |
+| `games` | array of enum | Non-empty subset of the global `games` enum. See SCHEMA.md for `games` semantics. |
 | `type` | const | Always `"animal"` for cards in this schema. |
 | `text` | string | Full verbatim card text. `""` if the animal has no effect text (vanilla appeal-only animals). |
 | `notes` | string or null | Optional rulings / Latin name / FAQ refs. `null` if none. |
@@ -90,7 +90,7 @@ Standard enclosure, no rock/water requirement, multi-icon prereq (Predator ×2):
 {
   "id": "AN-411",
   "name": "Grizzly Bear",
-  "set": ["base", "marine-worlds"],
+  "games": ["base", "marine-worlds"],
   "type": "animal",
   "rock_icons": 0,
   "water_icons": 0,
@@ -130,7 +130,7 @@ Standard *and* small-reptile-house, one water icon, levelled ability:
 {
   "id": "AN-469",
   "name": "Nile Crocodile",
-  "set": ["base", "marine-worlds"],
+  "games": ["base", "marine-worlds"],
   "type": "animal",
   "rock_icons": 0,
   "water_icons": 1,
@@ -160,7 +160,7 @@ Aquarium-only sea animal, wave-trigger, reef payload. Sea-animal identity comes 
 {
   "id": "MW-533",
   "name": "Blackside Hawkfish",
-  "set": ["marine-worlds"],
+  "games": ["marine-worlds"],
   "type": "animal",
   "rock_icons": 0,
   "water_icons": 0,

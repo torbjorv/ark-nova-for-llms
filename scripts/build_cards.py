@@ -212,7 +212,7 @@ def _collect_replacement_numbers(rows: list, mw_col: int) -> set[int]:
 
     A replacement row has `MW` in the mw_flag column AND a name ending in `*`.
     The same number with no `MW` flag is the base printing the marine row
-    replaces — its `set` should be ["base"] (only seen in pure-base games).
+    replaces — its `games` should be ["base"] (only seen in pure-base games).
     """
     replaced: set[int] = set()
     for row in rows[1:]:
@@ -228,8 +228,8 @@ def _collect_replacement_numbers(rows: list, mw_col: int) -> set[int]:
     return replaced
 
 
-def _set_value_for(is_mw: bool, num: int, replaced: set[int]) -> list[str]:
-    """Map an MW-flag + sheet number to a `set` field value.
+def _games_value_for(is_mw: bool, num: int, replaced: set[int]) -> list[str]:
+    """Map an MW-flag + sheet number to a `games` field value.
 
     - Marine row (MW flag, with or without `*`): only in base+marine games → ["marine-worlds"].
     - Base row whose number has a marine errata replacement: only in pure-base
@@ -278,7 +278,7 @@ def _emit_base_originals(cards: list[dict]) -> list[dict]:
 
     For each MW-### card whose AN-### counterpart is registered in
     BASE_ORIGINAL_OVERRIDES, produce a twin with id rewritten to AN-###,
-    set=["base"], and any field overrides applied.
+    games=["base"], and any field overrides applied.
     """
     twins: list[dict] = []
     for card in cards:
@@ -290,7 +290,7 @@ def _emit_base_originals(cards: list[dict]) -> list[dict]:
             continue
         twin = dict(card)
         twin["id"] = an_id
-        twin["set"] = ["base"]
+        twin["games"] = ["base"]
         twin.update(BASE_ORIGINAL_OVERRIDES[an_id])
         twins.append(twin)
     return twins
@@ -633,7 +633,7 @@ def read_animals(ws) -> list[dict]:
         mw_flag = row[12]
 
         is_mw = (mw_flag == "MW")
-        set_value = _set_value_for(is_mw, num, replaced)
+        games_value = _games_value_for(is_mw, num, replaced)
         prefix = "MW" if is_mw else "AN"
         cid = f"{prefix}-{num:03d}"
 
@@ -654,7 +654,7 @@ def read_animals(ws) -> list[dict]:
         card = new_card(
             id=cid,
             name=_titlecase(name_raw),
-            set=set_value,
+            games=games_value,
             type="animal",
             rock_icons=enc["rock_icons"],
             water_icons=enc["water_icons"],
@@ -706,7 +706,7 @@ def read_sponsors(ws) -> list[dict]:
         is_mw = (mw_raw == "MW")
         # Sponsors: if marked MW, it's a replacement → MW-###. Otherwise base → AN-###.
         prefix = "MW" if is_mw else "AN"
-        set_value = _set_value_for(is_mw, num, replaced)
+        games_value = _games_value_for(is_mw, num, replaced)
         cid = f"{prefix}-{num:03d}"
         # Strip the trailing `*` errata marker from the printed name.
         if isinstance(name, str):
@@ -739,7 +739,7 @@ def read_sponsors(ws) -> list[dict]:
         card = new_card(
             id=cid,
             name=name,
-            set=set_value,
+            games=games_value,
             type="sponsor",
             strength=strength if isinstance(strength, int) else None,
             requires=req_tags,
@@ -838,7 +838,7 @@ def read_conservation(ws) -> list[dict]:
 
         is_mw = (mw_flag == "MW")
         prefix = "MW" if is_mw else "AN"
-        set_value = _set_value_for(is_mw, num, replaced)
+        games_value = _games_value_for(is_mw, num, replaced)
         cid = f"{prefix}-{num:03d}"
 
         text = requirements_text or ""
@@ -850,7 +850,7 @@ def read_conservation(ws) -> list[dict]:
         card = new_card(
             id=cid,
             name=name.replace("*", "").strip() if name else name,
-            set=set_value,
+            games=games_value,
             type="conservation-project",
             requires=requires,
             triggers=triggers,
@@ -1018,7 +1018,7 @@ def read_final_scoring(ws) -> list[dict]:
 
         is_mw = (mw_flag == "MW")
         prefix = "MW" if is_mw else "AN"
-        set_value = _set_value_for(is_mw, num, replaced)
+        games_value = _games_value_for(is_mw, num, replaced)
         cid = f"{prefix}-{num:03d}"
 
         text = text_raw or ""
@@ -1027,7 +1027,7 @@ def read_final_scoring(ws) -> list[dict]:
         card = new_card(
             id=cid,
             name=(name or "").replace("*", "").strip(),
-            set=set_value,
+            games=games_value,
             type="final-scoring",
             tier_thresholds=tier_thr,
             tier_rewards=tier_rew,

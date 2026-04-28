@@ -27,7 +27,7 @@ JSONL_PATH = REPO / "cards.jsonl"
 
 # Fields stored as JSON text in SQLite (lists / dicts in the source data).
 JSON_FIELDS = {
-    "set",
+    "games",
     "icons",
     "abilities",
     "requires",

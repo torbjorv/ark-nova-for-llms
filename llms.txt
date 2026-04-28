@@ -36,7 +36,7 @@ Single table `cards`. Every row has every column.
 
 | column | type | notes |
 |---|---|---|
-| `id` | TEXT | e.g. `AN-401`, `MW-544`. The prefix indicates the printing source (base box vs marine box); use the `set` column for deck-membership filters. |
+| `id` | TEXT | e.g. `AN-401`, `MW-544`. The prefix indicates the printing source (base box vs marine box); use the `games` column for game-membership filters. |
 | `name` | TEXT | |
 | `type` | TEXT | enum (see below) |
 | `rock_icons` | INTEGER | enclosure rock-icon count, ≥ 0 |
@@ -65,7 +65,7 @@ Stored as JSON text; query with the JSON1 functions. **Duplicates encode multipl
 
 | column | shape | example |
 |---|---|---|
-| `set` | array of TEXT | `["base","marine-worlds"]`, `["base"]`, `["marine-worlds"]` — see *Set semantics* below |
+| `games` | array of TEXT | `["base","marine-worlds"]`, `["base"]`, `["marine-worlds"]` — see *Games semantics* below |
 | `icons` | array of TEXT | `["primate","primate","africa"]` (animal), `["science"]` (sponsor), `[]` (project / final-scoring). Unified vocabulary: continents, animal categories, plus `rock` / `water` / `science`. See *Icons* below. |
 | `abilities` | array of TEXT | `["sprint"]` |
 | `requires` | array of TEXT | `["bear","animals-ii"]` |
@@ -83,11 +83,11 @@ Idioms:
 - **Object lookup:** `json_extract(ability_levels, '$.sprint')`
 - **All distinct values:** `SELECT DISTINCT value FROM cards, json_each(cards.abilities)`
 
-### Set semantics
+### Games semantics
 
-`set` is a JSON array listing the deck configurations the card appears in (it is *not* a single product label). Values come from `{base, marine-worlds}`:
+`games` is a JSON array listing the game configurations the card appears in (it is *not* a single product label). Values come from `{base, marine-worlds}`:
 
-| `set` value | meaning |
+| `games` value | meaning |
 |---|---|
 | `["base", "marine-worlds"]` | base card with no marine errata — appears in pure-base **and** base+marine games |
 | `["base"]` | base card replaced by a marine errata — only appears in pure-base games |
@@ -95,11 +95,9 @@ Idioms:
 
 Filter idioms:
 
-- *"In a base-only game"* / *"in the base set"* → `EXISTS (SELECT 1 FROM json_each("set") WHERE value = 'base')`
-- *"In a base+marine game"* → `EXISTS (SELECT 1 FROM json_each("set") WHERE value = 'marine-worlds')`
-- *"What does Marine Worlds add or change"* (new + errata) → `NOT EXISTS (SELECT 1 FROM json_each("set") WHERE value = 'base')`
-
-Note: `set` is a SQLite reserved word — quote it as `"set"` in SQL.
+- *"In a base-only game"* / *"in the base set"* → `EXISTS (SELECT 1 FROM json_each(games) WHERE value = 'base')`
+- *"In a base+marine game"* → `EXISTS (SELECT 1 FROM json_each(games) WHERE value = 'marine-worlds')`
+- *"What does Marine Worlds add or change"* (new + errata) → `NOT EXISTS (SELECT 1 FROM json_each(games) WHERE value = 'base')`
 
 ### Enums
 
@@ -109,7 +107,7 @@ icons: africa | americas | asia | europe | australia        # 5 continents
        | bear | bird | herbivore | petting-zoo | predator
        | primate | reptile | sea-animal                     # 8 animal categories
        | rock | water | science                             # 3 named icons (sponsor-granted)
-set:   base | marine-worlds   (each appears as one or more elements of the `set` array)
+games: base | marine-worlds   (each appears as one or more elements of the `games` array)
 ```
 
 Tag values for `abilities`, `requires`, and `triggers` are a closed vocabulary defined in `ABILITIES.md`. **Don't invent tags.** If a user references a tag not in `ABILITIES.md`, tell them so and suggest the closest real one. To list the live vocabulary in-database: `SELECT DISTINCT value FROM cards, json_each(cards.abilities)` (and the same for the other columns).

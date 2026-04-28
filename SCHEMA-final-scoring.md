@@ -14,7 +14,7 @@ Read [SCHEMA.md](./SCHEMA.md) first for the global enums and invariants.
 |---|---|---|
 | `id` | string | Stable unique ID. |
 | `name` | string | Card name as printed. |
-| `set` | array of enum | Non-empty subset of the global `set` enum. See SCHEMA.md for set semantics. |
+| `games` | array of enum | Non-empty subset of the global `games` enum. See SCHEMA.md for `games` semantics. |
 | `type` | const | Always `"final-scoring"` for cards in this schema. |
 | `text` | string | Full verbatim card text. `""` only in trivial cases. |
 | `notes` | string or null | Optional rulings / FAQ refs. `null` if none. |
@@ -51,7 +51,7 @@ The category being scored is captured in `name` and `text` (e.g. "Large Animal Z
 {
   "id": "AN-001",
   "name": "Large Animal Zoo",
-  "set": ["base"],
+  "games": ["base"],
   "type": "final-scoring",
   "rock_icons": 0,
   "water_icons": 0,
@@ -89,7 +89,7 @@ The category being scored is captured in `name` and `text` (e.g. "Large Animal Z
 {
   "id": "AN-002",
   "name": "Small Animal Zoo",
-  "set": ["base", "marine-worlds"],
+  "games": ["base", "marine-worlds"],
   "type": "final-scoring",
   "text": "Gain CP for small animals in your zoo.",
   "tier_thresholds": [3, 6, 8, 10],

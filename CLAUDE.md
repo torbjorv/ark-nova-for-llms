@@ -5,10 +5,9 @@ Structured data for Ark Nova board game cards, optimized for querying by Claude.
 ## Data and schema
 
 - `cards.jsonl` — one card per line, all structured fields + full text. This is the data.
-- `SCHEMA.md` — index, global enums (`set`, `type`, `icons`), the rock/water icon convention, design rules.
+- `SCHEMA.md` — index, global enums (`games`, `type`, `icons`), the rock/water icon convention, design rules.
 - `SCHEMA-animal.md`, `SCHEMA-sponsor.md`, `SCHEMA-conservation-project.md`, `SCHEMA-final-scoring.md` — per-type field semantics. Each lists both the fields applicable to that type and the fields that are constant (always null/empty) on that type, so the contract for one card type can be reviewed in isolation.
 - `ABILITIES.md` — the closed vocabulary of ability / requires / triggers tags, each with a one-line definition.
-- `sets/*.txt` — card-ID membership per set.
 
 ## Authoritative sources
 
@@ -30,6 +29,19 @@ When in doubt about a card's text, an icon's meaning, or a rules edge case, cons
 3. If you find yourself needing a tag that isn't in `ABILITIES.md`, **add it to `ABILITIES.md` with a one-line definition before using it** — don't encode new semantics only in `text`. The guiding rule: if a user might ever filter on it, it's a tag, not prose.
 4. When in doubt about a card's printed text or icon meaning, check the manual PDFs in `source_data/`.
 5. Run `python scripts/validate.py` before committing. CI should fail otherwise.
+
+## Changing the schema
+
+Renaming or adding/removing a column, changing a JSON shape, changing an enum value, or adding/renaming a tag is a **schema change**, not a data edit. Every schema change must update all of the following in the same commit:
+
+- `SCHEMA.md` and the affected per-type schema (`SCHEMA-animal.md` / `SCHEMA-sponsor.md` / `SCHEMA-conservation-project.md` / `SCHEMA-final-scoring.md`).
+- `ABILITIES.md` if a tag is added, removed, or renamed.
+- `scripts/validate.py` — column list (`REQUIRED_FIELDS`), enums (`SET_ENUM` / `TYPE_ENUM` / `ICON_ENUM`), and per-field checks.
+- `scripts/build_cards.py` — so the next rebuild emits the new shape.
+- `cards.jsonl` — rebuild via `build_cards.py` (or hand-edit) and rerun `validate.py`.
+- **`llms.txt`** — column tables (scalar + JSON-typed), enum block, idioms, and any example queries that reference the changed name. `llms.txt` is the canonical operational manual every LLM consumer reads; drift here means every Claude in the wild writes broken SQL against this dataset. `README.md` only points at `llms.txt`, so it rarely needs an edit, but check it anyway.
+
+After the edit, sanity-check by running the example queries near the top of `llms.txt` through `python scripts/query.py` — they must succeed against the rebuilt `cards.jsonl`. If `llms.txt` documents a column name, `cards.jsonl` must have it; if `cards.jsonl` has a column, `llms.txt` must document it.
 
 ## Querying
 
