@@ -14,7 +14,7 @@ Structured data for Ark Nova board game cards, optimized for querying by Claude.
 
 When in doubt about a card's text, an icon's meaning, or a rules edge case, consult these before guessing. The PDFs are scanned/searchable rulebooks; the spreadsheet is the structured-data master that `cards.jsonl` is built from.
 
-- `source_data/Manual - Ark Nova.pdf` — official base-game rulebook. Authoritative for terminology and rules. Confirms there is no umbrella term for rock/water icons (the rulebook says *"the enclosure has 1 or 2 rock and/or water icons"*) and contains no `biome` / `habitat` / `marine` references.
+- `source_data/Manual - Ark Nova.pdf` — official base-game rulebook. Authoritative for terminology and rules.
 - `source_data/Manual - Marine expansion.pdf` — official Marine Worlds rulebook. Authoritative for wave-trigger, reef-ability, aquarium / large-reptile-house, and Sea Animal mechanics.
 - `source_data/arknovaanimals_VM_v2.xlsx` — community-maintained structured spreadsheet (Animals / Sponsors / Conservation / Final Scoring sheets). The build pipeline reads this; the column "Enclosure size (Rock/Water)" is the source for `rock_icons` / `water_icons` / `*_size` fields. Does not include card text.
 
@@ -22,7 +22,6 @@ When in doubt about a card's text, an icon's meaning, or a rules edge case, cons
 
 - `scripts/build_cards.py` — rebuild `cards.jsonl` from the spreadsheet. Animal text is derived from spreadsheet ability columns; sponsor / project / final-scoring text is assembled from spreadsheet effect columns. Hand-written text in the existing `cards.jsonl` is **not** preserved across rebuilds.
 - `scripts/validate.py` — enforces field presence, types, enum membership, tag membership, `ability_levels` / `ability_targets` key consistency, and `tier_thresholds` / `tier_rewards` length matching. **Run before every commit.** CI should fail otherwise.
-- `scripts/extract_ssimeonoff.py`, `scripts/import_ender_wiggin.py`, `scripts/migrate_enclosure.py` — historical bootstrap / migration scripts; not part of the routine pipeline.
 
 ## Adding or editing cards
 

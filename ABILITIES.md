@@ -4,7 +4,7 @@ Closed vocabulary for the `abilities`, `requires`, and `triggers` arrays in `car
 
 The `icons` field uses a separate, smaller closed vocabulary (5 continents + 8 animal categories + `rock` / `water` / `science`) listed in `SCHEMA.md`. The icon tags also appear in this file so that they can be referenced from `requires` (e.g. `["predator","predator"]` for "needs 2 predator icons in zoo").
 
-This vocabulary was bootstrapped from the class tokens in the [ssimeonoff Ark Nova cards page](https://github.com/ssimeonoff/ssimeonoff.github.io/blob/master/ark-nova.html). Tags that are icons/keywords on actual cards (as opposed to metadata flags) are grouped for readability. **Some definitions are best-effort and marked `(verify)` — they should be confirmed against the real card text before the dataset is considered authoritative.** When in doubt, read the printed card.
+Definitions marked `(verify)` are best-effort and should be confirmed against the printed card before being relied on for queries.
 
 Format: `` `tag-name` — definition ``. Tags use `kebab-case`.
 
@@ -82,7 +82,7 @@ Best-effort labels from the source — these describe what kind of effect a spon
 - `level-ii-sponsor` — in `requires`: card requires the level-II sponsor-action upgrade.
 - `university` — in `requires`: card requires a university in the zoo.
 - `kiosk` — in `requires`: card requires a kiosk in the zoo.
-- `science` — science (research) icon. In `requires`: card requires N science icons in the zoo (multiplicity = N). In `icons`: sponsor grants a science icon when played. Also used as an `abilities` flag on sponsors that produce research icons (currently redundant with `icons` membership; preserved for parity with how other ability keywords are tagged).
+- `science` — science (research) icon. In `requires`: card requires N science icons in the zoo (multiplicity = N). In `icons`: sponsor grants a science icon when played. In `abilities`: flag on sponsors that produce research icons.
 - `max-25-appeal` — in `requires`: card can only be played when appeal is ≤ 25.
 - `release-activity` — in `requires`: conservation project is resolved via the Release activity.
 - `partnership-activity` — in `requires`: conservation project is resolved via the Partnership activity.
@@ -152,9 +152,7 @@ The icon / keyword printed on an animal card that drives its special effect. Mos
 - `venom` — venom / venomous ability.
 - `wave` — wave icon (Marine Worlds reef/ocean interaction). (verify)
 - `monkey-gang` — monkey-gang ability (Marine Worlds primates). (verify)
-- `cut-down` — cut-down ability (Marine Worlds). (verify)
 - `mark` — mark-another-card ability (Marine Worlds). (verify)
-- `extra-shift` — grants an extra shift action (see also top-level `extra-shift`).
 - `sea-animal-magnet` — sea-animal variant of the magnet ability (Marine Worlds). (verify)
 - `sponsor-magnet` — sponsor variant of the magnet ability. (verify)
 - `no-ability` — explicit placeholder on cards whose ability column is `none` / empty by design.

@@ -51,7 +51,7 @@ To find animals placeable in a given enclosure kind, filter on the matching `*_s
 | `money_cost` | integer | Money cost to play. Always populated for animals. |
 | `appeal` | integer or null | Appeal value. `null` for the small number of animals that grant no direct appeal. |
 | `conservation_points` | integer or null | Conservation points the card itself awards (e.g. on release). `null` if none. |
-| `reputation_requirement` | integer or null | Minimum reputation-track position required to play. `null` if no threshold. Reputation is never spent — strictly a threshold check. If a rep requirement is known to exist but the threshold isn't, set this to `null` and add the `reputation` tag to `requires`. |
+| `reputation_requirement` | integer or null | Minimum reputation-track position required to play. `null` if no threshold. Reputation is never spent — strictly a threshold check. |
 | `bonus_reward` | string or null | Verbatim text for any always-fires reward triggered by playing or releasing the animal — typically `"<N> reputation"` for animals that grant rep on release. `null` if none. (This field is shared with conservation projects, where it carries non-rep card-wide rewards like `"build 1 kiosk or pavilion"`.) |
 
 ### Tags

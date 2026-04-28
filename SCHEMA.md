@@ -69,7 +69,7 @@ The `type` column distinguishes "is this card an animal vs. a sponsor" when that
 
 ## Enclosure-requirement icons
 
-The Ark Nova rulebook talks about cards carrying "1 or 2 rock and/or water icons" — printed enclosure requirements that the zoo's `R` / `W` spaces must satisfy. There is no umbrella term in the rulebook, so the schema stores them as two integer counts:
+Printed enclosure requirements (the `R` / `W` icons the zoo's enclosure must satisfy) are stored as two integer counts:
 
 - `rock_icons` (integer ≥ 0) — number of rock icons printed on the card.
 - `water_icons` (integer ≥ 0) — number of water icons printed on the card.
@@ -78,7 +78,7 @@ The Ark Nova rulebook talks about cards carrying "1 or 2 rock and/or water icons
 
 These are **separate** from the `icons` array — they're enclosure requirements, not icons-in-zoo. A sponsor that *grants* a rock icon to the zoo (e.g. Baboon Rock) puts `"rock"` in its `icons` array. An animal whose enclosure requires rock has `rock_icons: 1` (or `2`).
 
-There is no "marine" enclosure-requirement icon. Sea Animals are an animal *category* (captured by `"sea-animal"` in the `icons` field on animal cards and by the `aquarium_size` field for placement), not an enclosure requirement. A sea animal that also needs rock in its aquarium will have `rock_icons: 1` *and* `"sea-animal"` in `icons`.
+Sea Animals are an animal *category* (captured by `"sea-animal"` in the `icons` field plus the `aquarium_size` field for placement), not an enclosure requirement. A sea animal that also needs rock in its aquarium will have `rock_icons: 1` *and* `"sea-animal"` in `icons`.
 
 ## Tag fields
 

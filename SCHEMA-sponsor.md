@@ -17,13 +17,13 @@ Read [SCHEMA.md](./SCHEMA.md) first for the global enums, the closed-vocabulary 
 | `set` | array of enum | Non-empty subset of the global `set` enum. See SCHEMA.md for set semantics. |
 | `type` | const | Always `"sponsor"` for cards in this schema. |
 | `text` | string | Full verbatim card text. `""` only for trivial cases. |
-| `notes` | string or null | Currently always `null` for sponsors; reserved for rulings / FAQ refs. |
+| `notes` | string or null | Optional rulings / FAQ refs. `null` if none. |
 
 ### Strength
 
 | Field | Type | Description |
 |---|---|---|
-| `strength` | integer or null | Sponsor strength / level. The player's current sponsor card sets the maximum strength they may play. `null` only if a sponsor genuinely has no printed strength (none in the current dataset; reserved for future cards). |
+| `strength` | integer or null | Sponsor strength / level. The player's current sponsor card sets the maximum strength they may play. `null` if a sponsor has no printed strength. |
 
 ### Icons granted on play
 

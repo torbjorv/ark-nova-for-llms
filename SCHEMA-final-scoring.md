@@ -41,7 +41,7 @@ Final-scoring cards are extremely sparse: aside from the common identity fields 
 | `wave_icon` | `false` |
 | `ability_levels`, `ability_targets` | `{}` |
 
-The category being scored is captured in `name` and `text` (e.g. "Large Animal Zoo" → animals of size 4–5). It is **not** currently encoded as a structured filter — if cross-card filtering on final-scoring categories becomes a use case, add a tag to `ABILITIES.md` and populate `requires` accordingly.
+The category being scored is captured in `name` and `text` (e.g. "Large Animal Zoo" → animals of size 4–5); it is not encoded as a structured filter.
 
 ## Examples
 
