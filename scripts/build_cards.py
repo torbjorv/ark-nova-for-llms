@@ -245,6 +245,59 @@ def _set_value_for(is_mw: bool, num: int, replaced: set[int]) -> list[str]:
     return ["base", "marine-worlds"]
 
 
+# Pre-errata (base-original) deltas for cards the Marine Worlds expansion replaced.
+# The spreadsheet only contains the marine-replacement row for each errata case,
+# so we synthesise the AN-### twin from the MW-### row plus these field overrides.
+# Empty dict = mechanically identical to marine; the reprint was an iconography-only
+# update ("all animal types" → "different animal icons", per Marine rulebook p.2).
+BASE_ORIGINAL_OVERRIDES: dict[str, dict] = {
+    # Final-scoring tiles — marine retuned thresholds upward for several
+    "AN-001": {"tier_thresholds": [1, 2, 3, 4]},
+    "AN-003": {"tier_thresholds": [3, 4, 5, 7]},
+    "AN-005": {"tier_thresholds": [2, 3, 4, 5]},
+    "AN-008": {"tier_thresholds": [3, 5, 7, 9]},
+    "AN-009": {},  # Diverse Species Zoo — icon-only
+    "AN-010": {"tier_thresholds": [1, 3, 5, 6]},
+    "AN-011": {"tier_thresholds": [2, 4, 6, 7]},
+    # Conservation projects — icon-only (the "different X icons" wording is the
+    # marine-iconography update; mechanical thresholds/rewards are unchanged)
+    "AN-101": {},
+    "AN-102": {},
+    "AN-131": {},
+    # Sponsors — six are icon-only; Sea Turtle Tank had its provides extended
+    "AN-207": {},
+    "AN-208": {},
+    "AN-225": {},
+    "AN-226": {},
+    "AN-227": {},
+    "AN-250": {"provides": ["reptile", "water"]},
+    "AN-261": {"name": "Guided School Tours"},  # marine reprint has typo "Toours"
+}
+
+
+def _emit_base_originals(cards: list[dict]) -> list[dict]:
+    """Synthesise AN-### base-original twins for marine errata replacements.
+
+    For each MW-### card whose AN-### counterpart is registered in
+    BASE_ORIGINAL_OVERRIDES, produce a twin with id rewritten to AN-###,
+    set=["base"], and any field overrides applied.
+    """
+    twins: list[dict] = []
+    for card in cards:
+        cid = card["id"]
+        if not cid.startswith("MW-"):
+            continue
+        an_id = "AN-" + cid.split("-", 1)[1]
+        if an_id not in BASE_ORIGINAL_OVERRIDES:
+            continue
+        twin = dict(card)
+        twin["id"] = an_id
+        twin["set"] = ["base"]
+        twin.update(BASE_ORIGINAL_OVERRIDES[an_id])
+        twins.append(twin)
+    return twins
+
+
 # ---------------------------------------------------------------------------
 # Enclosure parsing
 # ---------------------------------------------------------------------------
@@ -932,6 +985,8 @@ def main() -> int:
     all_cards += read_conservation(wb["Conservation"])
     all_cards += read_sponsors(wb["Sponsors"])
     all_cards += read_animals(wb["Animals"])
+
+    all_cards += _emit_base_originals(all_cards)
 
     all_cards.sort(key=lambda c: (c["type"], c["id"]))
 
