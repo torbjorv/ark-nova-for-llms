@@ -41,7 +41,7 @@ Single table `cards`. Every row has every column.
 | `conservation_points` | INTEGER \| NULL | mostly on animals |
 | `strength` | INTEGER \| NULL | sponsor strength; NULL on non-sponsors |
 | `reputation_requirement` | INTEGER \| NULL | mostly on sponsors |
-| `reputation_reward` | INTEGER \| NULL | on some animals and conservation projects |
+| `bonus_reward` | TEXT \| NULL | always-fires reward on play / on support — `"<N> reputation"` for animals' release-rep and release-CP rep; non-rep card-wide rewards on management-plan CPs (e.g. `"build 1 kiosk or pavilion"`) |
 | `money_cost` | INTEGER \| NULL | on animals; NULL on sponsors / projects / final-scoring |
 | `text` | TEXT | verbatim card text. Animals use `""` — their effects are encoded as tags, not prose |
 | `notes` | TEXT \| NULL | e.g. Latin name |
@@ -69,8 +69,8 @@ Stored as JSON text; query with the JSON1 functions. **Duplicates encode multipl
 | `triggers` | array of TEXT | `["ongoing","end"]` |
 | `ability_levels` | object: tag → INTEGER | `{"sprint": 3}` |
 | `ability_targets` | object: tag → TEXT | `{"iconic": "europe"}` |
-| `tier_thresholds` | array of INTEGER | conservation-project levels |
-| `tier_rewards` | array of TEXT | conservation-project rewards |
+| `tier_thresholds` | array of INTEGER | conservation-project / final-scoring tier thresholds (`[]` if no escalating ladder — see partnership / management-plan CPs) |
+| `tier_rewards` | array of TEXT | conservation-project / final-scoring rewards per slot. Each entry is short text — `"<N> CP"` for plain rewards, e.g. `"2 CP + Hunter 1"` or `"2 CP + 2 rep"` when a slot grants more than CP. Same length as `tier_thresholds` when both are populated. |
 
 Idioms:
 

@@ -53,7 +53,7 @@ To find animals placeable in a given enclosure kind, filter on the matching `*_s
 | `appeal` | integer or null | Appeal value. `null` for the small number of animals that grant no direct appeal. |
 | `conservation_points` | integer or null | Conservation points the card itself awards (e.g. on release). `null` if none. |
 | `reputation_requirement` | integer or null | Minimum reputation-track position required to play. `null` if no threshold. Reputation is never spent — strictly a threshold check. If a rep requirement is known to exist but the threshold isn't, set this to `null` and add the `reputation` tag to `requires`. |
-| `reputation_reward` | integer or null | Reputation gained when the animal is released. `null` if none. |
+| `bonus_reward` | string or null | Verbatim text for any always-fires reward triggered by playing or releasing the animal — typically `"<N> reputation"` for animals that grant rep on release. `null` if none. (This field is shared with conservation projects, where it carries non-rep card-wide rewards like `"build 1 kiosk or pavilion"`.) |
 
 ### Tags
 
@@ -107,7 +107,7 @@ Standard enclosure, no rock/water requirement, multi-icon prereq (Predator ×2):
   "conservation_points": null,
   "strength": null,
   "reputation_requirement": null,
-  "reputation_reward": null,
+  "bonus_reward": null,
   "money_cost": 22,
   "text": "Gain {} X-token -token for each bear icon in all zoos (max.3). / Hire an association worker.",
   "notes": "Latin: Ursus arctos horribilis",

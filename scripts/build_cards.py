@@ -579,7 +579,7 @@ EMPTY = {
     "rock_icons": 0, "water_icons": 0, "continents": [], "categories": [], "size": None,
     "abilities": [], "requires": [], "provides": [], "triggers": [],
     "appeal": None, "conservation_points": None, "strength": None,
-    "reputation_requirement": None, "reputation_reward": None, "money_cost": None,
+    "reputation_requirement": None, "bonus_reward": None, "money_cost": None,
     "text": "", "notes": None,
     "standard_size": None, "reptile_house_size": None, "large_bird_aviary_size": None,
     "petting_zoo_size": None, "aquarium_size": None, "large_reptile_house_size": None,
@@ -645,6 +645,7 @@ def read_animals(ws) -> list[dict]:
         req_tags, rep_req = parse_reqs_column(reqs_raw)
         abil_tags, abil_levels, abil_targets = parse_ability_column(abil_raw)
         appeal, cp, rep_reward = parse_bonuses(bonus_raw)
+        bonus_reward = f"{rep_reward} reputation" if rep_reward else None
 
         abilities = abil_tags
         wave_bool = bool(wave)
@@ -669,7 +670,7 @@ def read_animals(ws) -> list[dict]:
             appeal=appeal,
             conservation_points=cp,
             reputation_requirement=rep_req,
-            reputation_reward=rep_reward,
+            bonus_reward=bonus_reward,
             money_cost=cost if isinstance(cost, int) else None,
             text=text,
             notes=notes,
@@ -814,12 +815,12 @@ def read_conservation(ws) -> list[dict]:
         activity = row[3]
         size_req_raw = row[4]
         cp_raw = row[5]
-        rep = row[6]
+        rep_raw = row[6]
         requirements_text = row[7]
         mw_flag = row[8]
 
         tier_thr = parse_tier(size_req_raw)
-        tier_rew = parse_tier(cp_raw)
+        tier_rew, bonus_reward = parse_tier_rewards(cp_raw, rep_raw)
 
         # Map activity → requires tag
         activity_tag = {
@@ -840,21 +841,7 @@ def read_conservation(ws) -> list[dict]:
         requires.extend(extra_tags)
         categories = _project_categories(requires)
 
-        rep_reward = None
-        if isinstance(rep, int):
-            rep_reward = rep
-        # '2/2/0' tiered reputation — we record first tier as reward
-        elif isinstance(rep, str):
-            m = re.match(r"(\d+)", rep)
-            if m:
-                rep_reward = int(m.group(1))
-
         is_mw = (mw_flag == "MW")
-        # Base-game printed card → AN-###. If the Deck is 'Base' and MW flag is present,
-        # that means this row is the MW REPLACEMENT for the base card → MW-### (and we
-        # also keep the base version via backup-only if it existed).
-        # Simpler convention: if deck==Zoo, always AN-### (zoo-pack version); if deck==Base
-        # and MW flag, MW-###; else AN-###.
         prefix = "MW" if is_mw else "AN"
         set_value = _set_value_for(is_mw, num, replaced)
         cid = f"{prefix}-{num:03d}"
@@ -870,7 +857,7 @@ def read_conservation(ws) -> list[dict]:
             categories=categories,
             requires=requires,
             triggers=triggers,
-            reputation_reward=rep_reward,
+            bonus_reward=bonus_reward,
             tier_thresholds=tier_thr,
             tier_rewards=tier_rew,
             text=text,
@@ -880,29 +867,49 @@ def read_conservation(ws) -> list[dict]:
     return cards
 
 
+_PROJECT_REQ_KEYWORDS = (
+    # Multi-word keywords first so they match before any prefix substring
+    ("sea animal", "sea-animal"),
+    ("water icon", "water"),
+    ("rock icon", "rock"),
+    ("research icon", "science"),
+    ("africa", "africa"),
+    ("americas", "americas"),
+    ("asia", "asia"),
+    ("europe", "europe"),
+    ("australia", "australia"),
+    ("bird", "bird"),
+    ("predator", "predator"),
+    ("reptile", "reptile"),
+    ("primate", "primate"),
+    ("herbavore", "herbivore"),
+    ("herbivore", "herbivore"),
+)
+
+
 def _infer_project_requires(text: str | None) -> list[str]:
+    """Infer category / continent requirement tags from the requirements-text cell.
+
+    Recognises the "Requires N <category> icons" pattern and emits the tag
+    with multiplicity N (e.g. "Requires 2 predator icons" → predator ×2).
+    Falls back to "tag once if keyword present" for legacy phrasing without
+    a numeric prefix (e.g. "Requires Africa icons in your zoo").
+    """
     if not text:
         return []
     low = text.lower()
     tags: list[str] = []
-    for kw, tag in (
-        ("africa", "africa"),
-        ("americas", "americas"),
-        ("asia", "asia"),
-        ("europe", "europe"),
-        ("australia", "australia"),
-        ("bird", "bird"),
-        ("predator", "predator"),
-        ("reptile", "reptile"),
-        ("primate", "primate"),
-        ("herbavore", "herbivore"),
-        ("herbivore", "herbivore"),
-        ("water icon", "water"),
-        ("rock icon", "rock"),
-        ("research icon", "science"),
-    ):
-        if kw in low and tag not in tags:
+    seen: set[str] = set()
+    for kw, tag in _PROJECT_REQ_KEYWORDS:
+        if tag in seen:
+            continue
+        m = re.search(r"\b(\d+)\s+" + re.escape(kw), low)
+        if m:
+            tags.extend([tag] * int(m.group(1)))
+            seen.add(tag)
+        elif kw in low:
             tags.append(tag)
+            seen.add(tag)
     return tags
 
 
@@ -929,6 +936,78 @@ def parse_tier(raw: Any) -> list[int]:
     return [int(x) for x in m] if m else []
 
 
+_PER_TIER_REP_RE = re.compile(r"^\d+/\d+/\d+$")
+
+
+def parse_tier_rewards(cp_raw: Any, rep_raw: Any) -> tuple[list[str], str | None]:
+    """Parse the spreadsheet's "Conservation Points" + "Reputation" columns
+    into (tier_rewards: list[str], bonus_reward: str | None).
+
+    Two tier-rewards formats are accepted:
+
+    - Pipe-separated text (preferred for management-plan-style cards and any
+      reward beyond plain CP): ``"2 CP + Hunter 1 | 2 CP + 1 rep per 2 research | 2 CP + search predator"``.
+      Each segment becomes one tier_rewards entry verbatim.
+
+    - Legacy slash-int format: ``"5/3/2"`` → ``["5 CP", "3 CP", "2 CP"]``.
+
+    Reputation column handling:
+
+    - Single int (e.g. ``1``) → ``bonus_reward = "1 reputation"``.
+    - Per-tier ``"X/Y/Z"`` (used by base-game partnership/breeding-program cards
+      where each support slot grants a different rep amount) → merged into
+      ``tier_rewards`` (e.g. CP ``2/1/2`` + rep ``2/2/0`` → ``["2 CP + 2 rep",
+      "1 CP + 2 rep", "2 CP"]``); ``bonus_reward`` stays None.
+    - Any other non-empty string (e.g. ``"build 1 kiosk or pavilion"``) → used as
+      ``bonus_reward`` verbatim.
+    - None / blank → ``bonus_reward = None``.
+    """
+    if cp_raw is None:
+        return [], _bonus_from_rep(rep_raw)
+
+    s = str(cp_raw).strip()
+    if not s:
+        return [], _bonus_from_rep(rep_raw)
+
+    # Preferred pipe format
+    if "|" in s:
+        rewards = [seg.strip() for seg in s.split("|") if seg.strip()]
+        return rewards, _bonus_from_rep(rep_raw)
+
+    # Legacy slash-int format → "<N> CP"
+    nums = re.findall(r"\d+", re.sub(r"\([^)]*\)", "", s))
+    rewards = [f"{n} CP" for n in nums]
+
+    # Merge per-tier reputation if rep column is the X/Y/Z form
+    if isinstance(rep_raw, str) and _PER_TIER_REP_RE.match(rep_raw.strip()):
+        rep_per_tier = [int(x) for x in rep_raw.strip().split("/")]
+        merged: list[str] = []
+        for cp_text, r in zip(rewards, rep_per_tier):
+            if r > 0:
+                merged.append(f"{cp_text} + {r} rep")
+            else:
+                merged.append(cp_text)
+        return merged, None
+
+    return rewards, _bonus_from_rep(rep_raw)
+
+
+def _bonus_from_rep(raw: Any) -> str | None:
+    if raw is None:
+        return None
+    if isinstance(raw, bool):
+        return None
+    if isinstance(raw, int):
+        return f"{raw} reputation"
+    s = str(raw).strip()
+    if not s:
+        return None
+    # Per-tier rep is consumed by parse_tier_rewards; never appears as bonus.
+    if _PER_TIER_REP_RE.match(s):
+        return None
+    return s
+
+
 def read_final_scoring(ws) -> list[dict]:
     rows = list(ws.iter_rows(values_only=True))
     replaced = _collect_replacement_numbers(rows, mw_col=6)
@@ -945,7 +1024,7 @@ def read_final_scoring(ws) -> list[dict]:
         mw_flag = row[6]
 
         tier_thr = parse_tier(req_raw)
-        tier_rew = parse_tier(cp_raw)
+        tier_rew, _ = parse_tier_rewards(cp_raw, None)
 
         is_mw = (mw_flag == "MW")
         prefix = "MW" if is_mw else "AN"

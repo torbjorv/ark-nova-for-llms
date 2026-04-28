@@ -8,7 +8,7 @@ The schema is split by card type so each type can be evaluated in isolation:
 |---|---|---|
 | `animal` | [SCHEMA-animal.md](./SCHEMA-animal.md) | 160 |
 | `sponsor` | [SCHEMA-sponsor.md](./SCHEMA-sponsor.md) | 80 |
-| `conservation-project` | [SCHEMA-conservation-project.md](./SCHEMA-conservation-project.md) | 32 |
+| `conservation-project` | [SCHEMA-conservation-project.md](./SCHEMA-conservation-project.md) | 39 |
 | `final-scoring` | [SCHEMA-final-scoring.md](./SCHEMA-final-scoring.md) | 17 |
 
 Each per-type schema lists every field that can carry a value on that card type **and** the fields that are constant (always `null` / `[]` / `{}` / `false`) for that type. Together they cover the full row contract.

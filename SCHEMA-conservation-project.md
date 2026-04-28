@@ -1,6 +1,6 @@
 # Conservation-project schema
 
-Schema for cards with `"type": "conservation-project"`. **32 cards** in the dataset (base + Marine Worlds).
+Schema for cards with `"type": "conservation-project"`. **39 cards** in the dataset (base + Marine Worlds).
 
 Conservation projects are mid-game scoring cards: a player who meets the project's prerequisites may "support" it for tiered conservation-point and reputation rewards. The reward tiers shrink as more players support the project.
 
@@ -25,10 +25,10 @@ This is the conservation-project's defining structure: a list of thresholds with
 
 | Field | Type | Description |
 |---|---|---|
-| `tier_thresholds` | array of int | Required-icon counts per support slot (e.g. `[5, 4, 2]` for `5/4/2`). `[]` if the project has no tiered prerequisite ladder. |
-| `tier_rewards` | array of int | CP awarded per support slot, paired 1:1 with `tier_thresholds` (e.g. `[5, 3, 2]` for `5/3/2` CP). Same length as `tier_thresholds` when both are populated. `[]` if none. |
+| `tier_thresholds` | array of int | Required-icon counts per support slot (e.g. `[5, 4, 2]` for `5/4/2`). `[]` if the project has no tiered prerequisite ladder — for partnership / management-plan cards the gateway lives in `requires` instead. |
+| `tier_rewards` | array of string | Reward per support slot, paired 1:1 with `tier_thresholds` when both are populated. Each entry is short text describing the full reward for that slot — base CP plus any per-slot extras. Examples: `"5 CP"` for a plain collection card; `"2 CP + 2 rep"` for a partnership slot that grants reputation; `"2 CP + Hunter 1"` for a management-plan slot that grants an ability. `[]` if none. |
 
-The validator enforces matching lengths when both arrays are non-empty.
+The validator enforces matching lengths when both arrays are non-empty, and that each `tier_rewards` entry is a string.
 
 ### Tags
 
@@ -45,11 +45,13 @@ The validator enforces matching lengths when both arrays are non-empty.
 |---|---|---|
 | `continents` | array of enum | Continent icons; almost always `[]`. (The project's continent prerequisite is encoded in `requires`, not `continents`.) |
 
-### Reputation reward
+### Card-wide bonus reward
+
+A reward that fires once per support, on top of the slot-specific `tier_rewards` entry. On release projects this is reputation; on management plans it can be a build (e.g. kiosk/pavilion), an ability trigger (e.g. sunbathing/digging), or any other always-fires effect.
 
 | Field | Type | Description |
 |---|---|---|
-| `reputation_reward` | integer or null | Reputation gained when the player supports this project. `null` if none. |
+| `bonus_reward` | string or null | Verbatim text describing the card-wide bonus (e.g. `"1 reputation"`, `"build 1 kiosk or pavilion"`, `"2 sunbathing"`). `null` if none. Per-tier rewards belong in `tier_rewards`, not here. |
 
 ## Always null/empty for conservation projects
 
@@ -71,7 +73,7 @@ The validator enforces matching lengths when both arrays are non-empty.
 
 ## Examples
 
-### Continent project — Africa (`AN-103`, `5/4/2` → `5/3/2`)
+### Continent project — Africa (`AN-103`, `5/4/2` → `5 CP / 3 CP / 2 CP`)
 
 Standard tiered project: 5 Africa icons → 5 CP, 4 → 3 CP, 2 → 2 CP. Prerequisite encoded as a `requires` tag.
 
@@ -94,7 +96,7 @@ Standard tiered project: 5 Africa icons → 5 CP, 4 → 3 CP, 2 → 2 CP. Prereq
   "conservation_points": null,
   "strength": null,
   "reputation_requirement": null,
-  "reputation_reward": null,
+  "bonus_reward": null,
   "money_cost": null,
   "text": "Requires Africa icons in your zoo.",
   "notes": null,
@@ -109,6 +111,31 @@ Standard tiered project: 5 Africa icons → 5 CP, 4 → 3 CP, 2 → 2 CP. Prereq
   "ability_levels": {},
   "ability_targets": {},
   "tier_thresholds": [5, 4, 2],
-  "tier_rewards": [5, 3, 2]
+  "tier_rewards": ["5 CP", "3 CP", "2 CP"]
+}
+```
+
+### Management plan — Predator Management Plan (`MW-134`)
+
+Marine Worlds management plans have no escalating threshold ladder — every slot has the same gateway (`requires: ["collection-activity", "predator", "predator"]` for *Requires 2 predator icons*) and slots differ by their per-tier extra reward. `tier_thresholds` is `[]`; the per-slot rewards live in `tier_rewards`.
+
+```json
+{
+  "id": "MW-134",
+  "name": "Predator Management Plan",
+  "set": ["marine-worlds"],
+  "type": "conservation-project",
+  "categories": ["predator"],
+  "requires": ["collection-activity", "predator", "predator"],
+  "triggers": [],
+  "bonus_reward": null,
+  "tier_thresholds": [],
+  "tier_rewards": [
+    "2 CP + Hunter 1",
+    "2 CP + 1 rep per 2 research",
+    "2 CP + search predator"
+  ],
+  "text": "Requires 2 predator icons.",
+  "...": "(remaining fields null/empty as per the schema)"
 }
 ```

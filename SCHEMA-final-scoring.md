@@ -24,9 +24,9 @@ Read [SCHEMA.md](./SCHEMA.md) first for the global enums and invariants.
 | Field | Type | Description |
 |---|---|---|
 | `tier_thresholds` | array of int | Required-count thresholds at game end, ascending (e.g. `[3, 6, 8, 10]`). `[]` for cards whose payoff isn't a simple tiered ladder (e.g. cards that score per-icon without a threshold). |
-| `tier_rewards` | array of int | CP per threshold, paired 1:1 with `tier_thresholds`. `[]` if none. |
+| `tier_rewards` | array of string | CP per threshold, paired 1:1 with `tier_thresholds`. Each entry is the slot's reward as text — typically `"<N> CP"` for plain final-scoring cards. `[]` if none. |
 
-The validator enforces matching lengths when both arrays are non-empty.
+The validator enforces matching lengths when both arrays are non-empty, and that each `tier_rewards` entry is a string.
 
 ## Always null/empty for final-scoring cards
 
@@ -36,7 +36,7 @@ Final-scoring cards are extremely sparse: aside from the common identity fields 
 |---|---|
 | `continents`, `categories`, `abilities`, `requires`, `provides`, `triggers` | `[]` |
 | `rock_icons`, `water_icons` | `0` |
-| `size`, `appeal`, `conservation_points`, `strength`, `reputation_requirement`, `reputation_reward`, `money_cost` | `null` |
+| `size`, `appeal`, `conservation_points`, `strength`, `reputation_requirement`, `bonus_reward`, `money_cost` | `null` |
 | `standard_size`, `reptile_house_size`, `large_bird_aviary_size`, `petting_zoo_size`, `aquarium_size`, `large_reptile_house_size`, `reef_ability` | `null` |
 | `wave_icon` | `false` |
 | `ability_levels`, `ability_targets` | `{}` |
@@ -66,7 +66,7 @@ The category being scored is captured in `name` and `text` (e.g. "Large Animal Z
   "conservation_points": null,
   "strength": null,
   "reputation_requirement": null,
-  "reputation_reward": null,
+  "bonus_reward": null,
   "money_cost": null,
   "text": "Gain CP for large animals in your zoo.",
   "notes": null,
@@ -95,7 +95,7 @@ The category being scored is captured in `name` and `text` (e.g. "Large Animal Z
   "type": "final-scoring",
   "text": "Gain CP for small animals in your zoo.",
   "tier_thresholds": [3, 6, 8, 10],
-  "tier_rewards": [1, 2, 3, 4],
+  "tier_rewards": ["1 CP", "2 CP", "3 CP", "4 CP"],
   "...": "(remaining fields null/empty as per the schema)"
 }
 ```

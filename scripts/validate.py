@@ -31,7 +31,7 @@ REQUIRED_FIELDS = {
     "conservation_points": (int, type(None)),
     "strength": (int, type(None)),
     "reputation_requirement": (int, type(None)),
-    "reputation_reward": (int, type(None)),
+    "bonus_reward": (str, type(None)),
     "money_cost": (int, type(None)),
     "text": str,
     "notes": (str, type(None)),
@@ -126,6 +126,12 @@ def check_row(row: dict, lineno: int, valid_tags: set[str]) -> list[str]:
         errors.append(
             f"{prefix}: tier_thresholds ({len(thr)}) and tier_rewards ({len(rew)}) length mismatch"
         )
+    for v in thr:
+        if not isinstance(v, int):
+            errors.append(f"{prefix}: tier_thresholds entry has wrong type ({type(v).__name__})")
+    for v in rew:
+        if not isinstance(v, str):
+            errors.append(f"{prefix}: tier_rewards entry has wrong type ({type(v).__name__})")
 
     return errors
 

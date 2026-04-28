@@ -44,11 +44,11 @@ A small number of Marine Worlds sponsors carry the wave icon:
 |---|---|---|
 | `wave_icon` | boolean | `true` for Marine Worlds wave-trigger sponsors (4 cards in the current dataset). `false` otherwise. |
 
-### Reputation reward (rare)
+### Bonus reward (rare)
 
 | Field | Type | Description |
 |---|---|---|
-| `reputation_reward` | integer or null | Reputation gained on play. `null` for almost all sponsors; populated only for the rare sponsor that grants reputation directly on play. |
+| `bonus_reward` | string or null | Verbatim text for any always-fires reward on play (e.g. `"1 reputation"`). `null` for almost all sponsors; populated only for the rare sponsor that grants a direct on-play bonus. |
 
 ## Always null/empty for sponsors
 
@@ -97,7 +97,7 @@ Has all three trigger phases (immediate, ongoing, end), a level-II prereq, and p
   "conservation_points": null,
   "strength": 5,
   "reputation_requirement": null,
-  "reputation_reward": null,
+  "bonus_reward": null,
   "money_cost": null,
   "text": "Take 1 card from the deck or in reputation range. / Take 1 card from the deck or in reputation range. / Gain 1 CP / 2 CP for 3 / 6 research icons.",
   "notes": null,
