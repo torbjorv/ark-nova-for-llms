@@ -43,9 +43,17 @@ REQUIRED_FIELDS = {
     "wave_icon": bool,
     "ability_levels": dict,
     "ability_targets": dict,
+    "alternative_ability": (str, type(None)),
     "tier_thresholds": list,
     "tier_rewards": list,
 }
+
+# `alternative_ability` is the smaller "alt-ability" box printed below the
+# primary ability on certain animal cards. Closed vocabulary: the four known
+# primary→alt mappings. Pilfering→Sprint and Venom→Inventive carry a level
+# matching the primary; Constriction→Clever and Hypnosis→Determination are
+# unlevelled.
+ALT_ABILITY_PATTERN = re.compile(r"^(?:(?:sprint|inventive)-[1-9]|clever|determination)$")
 
 GAMES_ENUM = {"base", "marine-worlds"}
 TYPE_ENUM = {"animal", "sponsor", "conservation-project", "final-scoring"}
@@ -120,6 +128,17 @@ def check_row(row: dict, lineno: int, valid_tags: set[str]) -> list[str]:
                 errors.append(
                     f"{prefix}: `{ab_field}[{k}]` has wrong type ({type(v).__name__})"
                 )
+
+    alt = row.get("alternative_ability")
+    if isinstance(alt, str):
+        if not ALT_ABILITY_PATTERN.match(alt):
+            errors.append(
+                f"{prefix}: `alternative_ability` value `{alt}` is not in the closed vocabulary"
+            )
+        if row.get("type") != "animal":
+            errors.append(
+                f"{prefix}: `alternative_ability` is set on a non-animal card"
+            )
 
     thr = row.get("tier_thresholds") or []
     rew = row.get("tier_rewards") or []

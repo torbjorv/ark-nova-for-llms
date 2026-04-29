@@ -72,6 +72,7 @@ These fields are part of every row but are **constant** on sponsor cards:
 | `ability_levels` | `{}` | animal |
 | `ability_targets` | `{}` | animal |
 | `abilities` | `[]` | animal (sponsors don't carry the named animal-ability keywords; the icons they grant live in `icons`) |
+| `alternative_ability` | `null` | animal (alt-ability box is an animal-card feature) |
 | `tier_thresholds` | `[]` | conservation-project, final-scoring |
 | `tier_rewards` | `[]` | conservation-project, final-scoring |
 
@@ -112,6 +113,7 @@ Has all three trigger phases (immediate, ongoing, end), a level-II prereq, and g
   "wave_icon": false,
   "ability_levels": {},
   "ability_targets": {},
+  "alternative_ability": null,
   "tier_thresholds": [],
   "tier_rewards": []
 }

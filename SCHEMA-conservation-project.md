@@ -63,6 +63,7 @@ A reward that fires once per support, on top of the slot-specific `tier_rewards`
 | `reef_ability` | `null` | animal |
 | `wave_icon` | `false` | animal, sponsor |
 | `ability_levels`, `ability_targets` | `{}` | animal |
+| `alternative_ability` | `null` | animal |
 
 ## Examples
 
@@ -101,6 +102,7 @@ Standard tiered project: 5 Africa icons → 5 CP, 4 → 3 CP, 2 → 2 CP. Prereq
   "wave_icon": false,
   "ability_levels": {},
   "ability_targets": {},
+  "alternative_ability": null,
   "tier_thresholds": [5, 4, 2],
   "tier_rewards": ["5 CP", "3 CP", "2 CP"]
 }

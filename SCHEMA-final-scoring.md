@@ -40,6 +40,7 @@ Final-scoring cards are extremely sparse: aside from the common identity fields 
 | `standard_size`, `reptile_house_size`, `large_bird_aviary_size`, `petting_zoo_size`, `aquarium_size`, `large_reptile_house_size`, `reef_ability` | `null` |
 | `wave_icon` | `false` |
 | `ability_levels`, `ability_targets` | `{}` |
+| `alternative_ability` | `null` |
 
 The category being scored is captured in `name` and `text` (e.g. "Large Animal Zoo" → animals of size 4–5); it is not encoded as a structured filter.
 
@@ -78,6 +79,7 @@ The category being scored is captured in `name` and `text` (e.g. "Large Animal Z
   "wave_icon": false,
   "ability_levels": {},
   "ability_targets": {},
+  "alternative_ability": null,
   "tier_thresholds": [],
   "tier_rewards": []
 }

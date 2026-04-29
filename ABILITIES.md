@@ -94,6 +94,21 @@ Best-effort labels from the source — these describe what kind of effect a spon
 - `on-release` — triggers when an animal is released into the wild.
 - `on-partnership` — triggers when a partnership is formed.
 
+## Alternative-ability vocabulary (for `alternative_ability`)
+
+Some animals print a smaller box below the primary ability box — the *alternative ability*. It's a game-mode option: players can agree to use the alt instead of the primary. The alt is encoded in the scalar `alternative_ability` column on animal cards (see `SCHEMA-animal.md`), not in the `abilities` array, and follows four fixed primary→alt mappings:
+
+| Primary ability | Alternative ability | Levelled? |
+|---|---|---|
+| `pilfering` (level N) | `sprint` (level N) | yes — level matches the primary |
+| `venom` (level N) | `inventive` (level N) | yes — level matches the primary |
+| `constriction` | `clever` | no |
+| `hypnosis` (always 3 in current data) | `determination` | no |
+
+Encoded values are short strings: `"sprint-1"`, `"sprint-2"`, `"inventive-1"`, `"inventive-2"`, `"clever"`, `"determination"`. `null` for animals with no alt-ability box.
+
+The alt tags themselves (`sprint`, `inventive`, `clever`, `determination`) also appear in the regular `abilities` keyword list below, since a handful of animals carry them as a *real second ability* rather than as the printed alt-box (e.g. AN-411 Grizzly Bear's Inventive + Full-throated; the scuba-dive cards' Marketing). The alt-ability box is visually distinct from a regular second ability — refer to the printed card or `card_images/` when in doubt.
+
 ## Sub-type vocabulary (for `ability_targets`)
 
 These strings appear as values in the `ability_targets` map, pairing with parameterised ability tags like `multiplier`, `boost`, `action`, `iconic`, `magnet`.

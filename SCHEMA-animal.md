@@ -62,6 +62,7 @@ To find animals placeable in a given enclosure kind, filter on the matching `*_s
 | `requires` | array of tag | Prereq tags from `ABILITIES.md` — enclosure prereqs, adjacency prereqs, category prereqs (e.g. `["predator","predator"]` for *2 predator icons in the zoo*). Duplicates allowed. `[]` if no prerequisites. |
 | `ability_levels` | object | `{tag: int}` for level-bearing abilities (e.g. `{"snapping": 2}` for Snapping 2). Keys must also appear in `abilities`. `{}` if none. |
 | `ability_targets` | object | `{tag: string}` for parameterised abilities (e.g. `{"iconic": "europe"}`). Keys must also appear in `abilities`. `{}` if none. |
+| `alternative_ability` | string or null | The smaller "alternative ability" box printed below the primary ability on some animals — a game-mode option where players agree to use the alt instead of the primary. Encoded as a single short string with the level appended where applicable: `"sprint-1"`, `"sprint-2"`, `"inventive-1"`, `"inventive-2"`, `"clever"`, `"determination"`. `null` for animals with no alternative-ability box. The four printed primary→alt patterns are listed in `ABILITIES.md`. Animals with two real ability boxes (Grizzly Bear's Inventive + Full-throated, Loggerhead Sea Turtle's Scuba-Dive + Marketing, etc.) carry both tags in `abilities` and leave this field `null` — the alt-ability box is visually distinct from a regular second ability. |
 
 ### Marine Worlds reef payload
 
@@ -117,6 +118,7 @@ Standard enclosure, no rock/water requirement, multi-icon prereq (Predator ×2):
   "wave_icon": false,
   "ability_levels": {},
   "ability_targets": {},
+  "alternative_ability": null,
   "tier_thresholds": [],
   "tier_rewards": []
 }
