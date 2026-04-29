@@ -57,7 +57,7 @@ ICON_ENUM = {
     # 3 named icons (sponsor-granted)
     "rock", "water", "science",
 }
-TAG_LINE = re.compile(r"^\s*-\s+`([a-z0-9\-]+)`")
+TAG_LINE = re.compile(r"^\s*-\s+`([a-z0-9\-\+]+)`")
 
 
 def load_tags(abilities_md: Path) -> set[str]:

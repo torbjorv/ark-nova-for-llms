@@ -82,7 +82,8 @@ Best-effort labels from the source — these describe what kind of effect a spon
 - `level-ii-sponsor` — in `requires`: card requires the level-II sponsor-action upgrade.
 - `university` — in `requires`: card requires a university in the zoo.
 - `kiosk` — in `requires`: card requires a kiosk in the zoo.
-- `science` — science (research) icon. In `requires`: card requires N science icons in the zoo (multiplicity = N). In `icons`: sponsor grants a science icon when played. In `abilities`: flag on sponsors that produce research icons.
+- `science` — science (research) icon. In `requires`: card requires N science icons in the zoo (multiplicity = N). In `icons`: sponsor grants a science icon when played (multiplicity = N).
+- `4+` — large-animal indicator (printed on animals with size ≥ 4). In `requires`: card needs N large-animal icons in the zoo (multiplicity = N).
 - `max-25-appeal` — in `requires`: card can only be played when appeal is ≤ 25.
 - `release-activity` — in `requires`: conservation project is resolved via the Release activity.
 - `partnership-activity` — in `requires`: conservation project is resolved via the Partnership activity.

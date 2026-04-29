@@ -33,11 +33,10 @@ Read [SCHEMA.md](./SCHEMA.md) first for the global enums, the closed-vocabulary 
 
 ### Tags
 
-`abilities`, `requires`, `triggers` all draw exclusively from `ABILITIES.md`.
+`requires` and `triggers` both draw exclusively from `ABILITIES.md`.
 
 | Field | Type | Description |
 |---|---|---|
-| `abilities` | array of tag | Ability-keyword tags on the card itself (e.g. `["science"]` for the science-lab sponsor). **Duplicates encode multiplicity.** `[]` if none. |
 | `requires` | array of tag | Prereq tags — most commonly `level-ii-sponsor` / `level-iii-sponsor` gating tags, or named-icon prereqs. Duplicates allowed. `[]` if no prerequisites. |
 | `triggers` | array of tag | When the effect fires — typically a subset of `immediate`, `ongoing`, `end`, plus reactive triggers (e.g. `on-play-animal`). Duplicates allowed. `[]` if the sponsor has no fire-time semantics modelled. |
 
@@ -72,6 +71,7 @@ These fields are part of every row but are **constant** on sponsor cards:
 | `reef_ability` | `null` | animal |
 | `ability_levels` | `{}` | animal |
 | `ability_targets` | `{}` | animal |
+| `abilities` | `[]` | animal (sponsors don't carry the named animal-ability keywords; the icons they grant live in `icons`) |
 | `tier_thresholds` | `[]` | conservation-project, final-scoring |
 | `tier_rewards` | `[]` | conservation-project, final-scoring |
 
@@ -91,7 +91,7 @@ Has all three trigger phases (immediate, ongoing, end), a level-II prereq, and g
   "water_icons": 0,
   "icons": ["science"],
   "size": null,
-  "abilities": ["science"],
+  "abilities": [],
   "requires": ["level-ii-sponsor"],
   "triggers": ["immediate", "ongoing", "end"],
   "appeal": null,
@@ -127,7 +127,7 @@ Ongoing-only trigger (fires whenever a research icon is played):
   "name": "Spokesperson",
   "games": ["base", "marine-worlds"],
   "type": "sponsor",
-  "abilities": ["science"],
+  "abilities": [],
   "requires": [],
   "icons": ["science"],
   "triggers": ["ongoing"],
