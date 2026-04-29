@@ -34,6 +34,37 @@ When in doubt about a card's text, an icon's meaning, or a rules edge case, cons
 - `MW-548` image title reads "Lined Seahorse" (Hippocampus erectus) but `cards.jsonl` names it "Short-Snouted Seahorse" — likely a `cards.jsonl` data error.
 - `Biodiverse Zoo` (`AN-009` / `MW-009`) is rule-identical in `cards.jsonl` but the MW reprint almost certainly adds the sea-animal icon to the illustrated category row. `cards.jsonl` doesn't capture which icons are drawn on a final-scoring card, so this difference doesn't appear as a field diff.
 
+## Iconography
+
+Reading card images is unreliable without the iconography rules. The two most common reading mistakes — confusing **conservation points** with **appeal**, and confusing the **always-fires bonus** with a **per-tier bonus** on conservation projects — both come from misreading the icon shape/colour. Internalize these before encoding any value off an image.
+
+**Reward icons (the numbers printed on a small shape inside reward strips):**
+
+| Icon | Meaning |
+|---|---|
+| Green/white pentagon shield, leaf motif | **Conservation point (CP)**. End-game / final scoring currency. The most common reward icon on the bottom-right of conservation-project tier strips and on final-scoring cards. |
+| Brown/orange rounded ticket (lozenge) | **Appeal**. Immediate / track-currency icon on sponsors, animals, and the bottom-right of most sponsor cards (the "appeal value of this card"). |
+| Yellow/gold coin | **Money** (`$`). |
+| Cyan/teal heart-with-wreath | **Reputation**. |
+| Purple "X" hexagon | **X-token**. |
+
+The shape, not the number, identifies the currency. A "1" on a green shield is `1 CP`; a "1" on a brown ticket is `1 Appeal`. They are not interchangeable, even when the printed number is the same.
+
+**Trigger / timing icons (left margin of an effect line):**
+
+| Icon | Meaning |
+|---|---|
+| Yellow lightning bolt | **Immediate** — fires once when the card is played or supported. |
+| Yellow infinity / arrow loop | **Ongoing trigger** — fires every time the printed condition occurs (`Each time …`). |
+| Green hourglass | **End of game** — counted/scored once at game end. |
+| Blue wave (Marine Worlds only) | **Wave trigger** — fires when a sea-animal icon enters the relevant zoo. Encoded as `wave_icon: true` on the card. |
+
+**Conservation-project structural reminder.** A conservation-project card has up to two distinct bonus areas:
+- A small icon next to the title strip = the **always-fires** card-wide bonus (`bonus_reward` field). On release projects this is typically `1 reputation`. On management plans it is usually `null`.
+- The leftmost (top-tier) reward cell can carry an **extra** per-tier bonus next to its CP value (e.g. tier-1 reef-trigger on `MW-138`). That extra lives inside `tier_rewards[0]`, not in `bonus_reward`. The two coexist; one does not replace the other.
+
+When a value is ambiguous from the image, fall back to the manual PDFs (the rulebook spells out reward currencies in terms of these icons) before guessing.
+
 ## Validation
 
 - `scripts/validate.py` — enforces field presence, types, enum membership, tag membership, `ability_levels` / `ability_targets` key consistency, and `tier_thresholds` / `tier_rewards` length matching. **Run before every commit.** CI should fail otherwise.
