@@ -15,7 +15,7 @@ When in doubt about a card's text, an icon's meaning, or a rules edge case, cons
 
 - `source_data/Manual - Ark Nova.pdf` — official base-game rulebook. Authoritative for terminology and rules.
 - `source_data/Manual - Marine expansion.pdf` — official Marine Worlds rulebook. Authoritative for wave-trigger, reef-ability, aquarium / large-reptile-house, and Sea Animal mechanics.
-- `source_data/arknovaanimals_VM_v2.xlsx` — community-maintained structured spreadsheet (Animals / Sponsors / Conservation / Final Scoring sheets). The build pipeline reads this; the column "Enclosure size (Rock/Water)" is the source for `rock_icons` / `water_icons` / `*_size` fields. Does not include card text.
+- `source_data/arknovaanimals_VM_v2.xlsx` — community-maintained structured spreadsheet (Animals / Sponsors / Conservation / Final Scoring sheets). Historical: was the source the deprecated build pipeline read from. Reference only — `cards.jsonl` is now hand-edited; when in conflict with the printed cards, the cards win.
 - `source_data/AN_Exp_1_AllCards_EN.pdf` — official Marine Worlds all-cards reference PDF. Source of the high-resolution per-card images under `source_data/card_images/`.
 
 ## Card images
@@ -32,13 +32,12 @@ When in doubt about a card's text, an icon's meaning, or a rules edge case, cons
 
 - 10 visually-identical AN/MW reprint pairs (`{101,102,131}` conservation, `{207,208,225,226,227,250,261}` sponsor) share a single physical card. The same image is filed under both ids by copy. If a real visual difference is ever found (e.g. a wave icon present on only the MW print), update `cards.jsonl` accordingly and split the images.
 - `MW-548` image title reads "Lined Seahorse" (Hippocampus erectus) but `cards.jsonl` names it "Short-Snouted Seahorse" — likely a `cards.jsonl` data error.
-- `MW-261` `cards.jsonl` name is "Guided School Toours" (typo) vs printed "Guided School Tours" — likely a `cards.jsonl` data error.
 - `Biodiverse Zoo` (`AN-009` / `MW-009`) is rule-identical in `cards.jsonl` but the MW reprint almost certainly adds the sea-animal icon to the illustrated category row. `cards.jsonl` doesn't capture which icons are drawn on a final-scoring card, so this difference doesn't appear as a field diff.
 
-## Build and validation pipeline
+## Validation
 
-- `scripts/build_cards.py` — rebuild `cards.jsonl` from the spreadsheet. Animal text is derived from spreadsheet ability columns; sponsor / project / final-scoring text is assembled from spreadsheet effect columns. Hand-written text in the existing `cards.jsonl` is **not** preserved across rebuilds.
 - `scripts/validate.py` — enforces field presence, types, enum membership, tag membership, `ability_levels` / `ability_targets` key consistency, and `tier_thresholds` / `tier_rewards` length matching. **Run before every commit.** CI should fail otherwise.
+- `scripts/build_cards.py` — **deprecated.** Historically rebuilt `cards.jsonl` from the spreadsheet. `cards.jsonl` is now edited directly; the script is kept in-tree as historical reference and should not be run.
 
 ## Adding or editing cards
 
@@ -55,11 +54,10 @@ Renaming or adding/removing a column, changing a JSON shape, changing an enum va
 - `SCHEMA.md` and the affected per-type schema (`SCHEMA-animal.md` / `SCHEMA-sponsor.md` / `SCHEMA-conservation-project.md` / `SCHEMA-final-scoring.md`).
 - `ABILITIES.md` if a tag is added, removed, or renamed.
 - `scripts/validate.py` — column list (`REQUIRED_FIELDS`), enums (`SET_ENUM` / `TYPE_ENUM` / `ICON_ENUM`), and per-field checks.
-- `scripts/build_cards.py` — so the next rebuild emits the new shape.
-- `cards.jsonl` — rebuild via `build_cards.py` (or hand-edit) and rerun `validate.py`.
+- `cards.jsonl` — hand-edit and rerun `validate.py`.
 - **`llms.txt`** — column tables (scalar + JSON-typed), enum block, idioms, and any example queries that reference the changed name. `llms.txt` is the canonical operational manual every LLM consumer reads; drift here means every Claude in the wild writes broken SQL against this dataset. `README.md` only points at `llms.txt`, so it rarely needs an edit, but check it anyway.
 
-After the edit, sanity-check by running the example queries near the top of `llms.txt` through `python scripts/query.py` — they must succeed against the rebuilt `cards.jsonl`. If `llms.txt` documents a column name, `cards.jsonl` must have it; if `cards.jsonl` has a column, `llms.txt` must document it.
+After the edit, sanity-check by running the example queries near the top of `llms.txt` through `python scripts/query.py` — they must succeed against the updated `cards.jsonl`. If `llms.txt` documents a column name, `cards.jsonl` must have it; if `cards.jsonl` has a column, `llms.txt` must document it.
 
 ## Querying
 
