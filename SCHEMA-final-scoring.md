@@ -37,7 +37,7 @@ Final-scoring cards are extremely sparse: aside from the common identity fields 
 | `icons`, `abilities`, `requires`, `triggers` | `[]` |
 | `rock_icons`, `water_icons` | `0` |
 | `size`, `appeal`, `conservation_points`, `strength`, `reputation_requirement`, `bonus_reward`, `money_cost` | `null` |
-| `standard_size`, `reptile_house_size`, `large_bird_aviary_size`, `petting_zoo_size`, `aquarium_size`, `large_reptile_house_size`, `reef_ability` | `null` |
+| `standard_size`, `reptile_house_size`, `large_bird_aviary_size`, `petting_zoo_size`, `aquarium_size`, `reef_ability` | `null` |
 | `wave_icon` | `false` |
 | `ability_levels`, `ability_targets` | `{}` |
 | `alternative_ability` | `null` |
@@ -74,7 +74,6 @@ The category being scored is captured in `name` and `text` (e.g. "Large Animal Z
   "large_bird_aviary_size": null,
   "petting_zoo_size": null,
   "aquarium_size": null,
-  "large_reptile_house_size": null,
   "reef_ability": null,
   "wave_icon": false,
   "ability_levels": {},

@@ -38,7 +38,6 @@ REQUIRED_FIELDS = {
     "large_bird_aviary_size": (int, type(None)),
     "petting_zoo_size": (int, type(None)),
     "aquarium_size": (int, type(None)),
-    "large_reptile_house_size": (int, type(None)),
     "reef_ability": (str, type(None)),
     "wave_icon": bool,
     "ability_levels": dict,

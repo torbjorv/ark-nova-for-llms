@@ -36,11 +36,10 @@ Sea-animal identity is captured by `"sea-animal"` in `icons` plus the `aquarium_
 |---|---|---|
 | `size` | integer | Scoring / category size, 1–5. For land animals this matches `standard_size`. For sea animals this is the *category size* — the parenthesised number on the card used by size-tier scoring — and is distinct from `aquarium_size`. Always populated for animals. |
 | `standard_size` | integer or null | Space requirement in a standard enclosure. `null` if the animal cannot be placed in a standard enclosure (most marine animals; reptile-house-only / petting-zoo-only / large-bird-aviary-only animals). |
-| `reptile_house_size` | integer or null | Space requirement in a small reptile house (`RH N`). `null` if not applicable. |
+| `reptile_house_size` | integer or null | Space requirement in the reptile house (`RH N`). `null` if not applicable. Sea turtles populate this *and* `aquarium_size` because they accept either enclosure. |
 | `large_bird_aviary_size` | integer or null | Space requirement in a large bird aviary (`LBA N`). `null` if not applicable. |
 | `petting_zoo_size` | integer or null | Space requirement in the petting zoo (`PZ N`). `null` if not applicable. |
-| `aquarium_size` | integer or null | Space requirement in an aquarium (`Aq N`). `null` if not applicable. |
-| `large_reptile_house_size` | integer or null | Space requirement in a large reptile house (`LRH N`). `null` if not applicable. Used by sea turtles, which accept aquarium *or* large-reptile-house. |
+| `aquarium_size` | integer or null | Space requirement in an aquarium (`Aq N`) — Marine Worlds adds Small Aquarium and Large Aquarium, but tokens are interchangeable across the two so a single field captures the requirement. `null` if not applicable. |
 
 To find animals placeable in a given enclosure kind, filter on the matching `*_size` field being non-null.
 
@@ -113,7 +112,6 @@ Standard enclosure, no rock/water requirement, multi-icon prereq (Predator ×2):
   "large_bird_aviary_size": null,
   "petting_zoo_size": null,
   "aquarium_size": null,
-  "large_reptile_house_size": null,
   "reef_ability": null,
   "wave_icon": false,
   "ability_levels": {},
@@ -147,7 +145,6 @@ Standard *and* small-reptile-house, one water icon, levelled ability:
   "large_bird_aviary_size": null,
   "petting_zoo_size": null,
   "aquarium_size": null,
-  "large_reptile_house_size": null,
   "reef_ability": null,
   "wave_icon": false,
   "...": "(remaining fields null/empty as per the schema)"

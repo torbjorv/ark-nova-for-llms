@@ -55,7 +55,6 @@ Single table `cards`. Every row has every column.
 | `large_bird_aviary_size` | INTEGER \| NULL | |
 | `petting_zoo_size` | INTEGER \| NULL | |
 | `aquarium_size` | INTEGER \| NULL | |
-| `large_reptile_house_size` | INTEGER \| NULL | |
 | `reef_ability` | TEXT \| NULL | reef ability code (Marine Worlds) |
 | `wave_icon` | INTEGER (0/1) | wave trigger icon (Marine Worlds); SQLite has no native BOOL |
 | `alternative_ability` | TEXT \| NULL | the smaller "alt-ability" box printed below the primary ability on some animals — a game-mode option (use the alt instead of the primary). Closed vocabulary: `"sprint-1"`, `"sprint-2"`, `"inventive-1"`, `"inventive-2"`, `"clever"`, `"determination"`. NULL on animals without an alt-ability box and on all non-animal cards. The four primary→alt mappings (pilfering→sprint, venom→inventive, constriction→clever, hypnosis→determination) are documented in `ABILITIES.md`. |

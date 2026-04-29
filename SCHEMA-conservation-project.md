@@ -59,7 +59,7 @@ A reward that fires once per support, on top of the slot-specific `tier_rewards`
 | `strength` | `null` | sponsor |
 | `reputation_requirement` | `null` | animal |
 | `money_cost` | `null` | animal (projects are supported via the action, not bought) |
-| `standard_size`, `reptile_house_size`, `large_bird_aviary_size`, `petting_zoo_size`, `aquarium_size`, `large_reptile_house_size` | `null` | animal |
+| `standard_size`, `reptile_house_size`, `large_bird_aviary_size`, `petting_zoo_size`, `aquarium_size` | `null` | animal |
 | `reef_ability` | `null` | animal |
 | `wave_icon` | `false` | animal, sponsor |
 | `ability_levels`, `ability_targets` | `{}` | animal |
@@ -97,7 +97,6 @@ Standard tiered project: 5 Africa icons → 5 CP, 4 → 3 CP, 2 → 2 CP. Prereq
   "large_bird_aviary_size": null,
   "petting_zoo_size": null,
   "aquarium_size": null,
-  "large_reptile_house_size": null,
   "reef_ability": null,
   "wave_icon": false,
   "ability_levels": {},

@@ -67,7 +67,7 @@ These fields are part of every row but are **constant** on sponsor cards:
 | `conservation_points` | `null` | animal |
 | `reputation_requirement` | `null` | animal |
 | `money_cost` | `null` | animal (sponsors are paid for via the sponsor action's cost track, not a per-card money cost) |
-| `standard_size`, `reptile_house_size`, `large_bird_aviary_size`, `petting_zoo_size`, `aquarium_size`, `large_reptile_house_size` | `null` | animal (sponsors aren't placed in enclosures) |
+| `standard_size`, `reptile_house_size`, `large_bird_aviary_size`, `petting_zoo_size`, `aquarium_size` | `null` | animal (sponsors aren't placed in enclosures) |
 | `reef_ability` | `null` | animal |
 | `ability_levels` | `{}` | animal |
 | `ability_targets` | `{}` | animal |
@@ -108,7 +108,6 @@ Has all three trigger phases (immediate, ongoing, end), a level-II prereq, and g
   "large_bird_aviary_size": null,
   "petting_zoo_size": null,
   "aquarium_size": null,
-  "large_reptile_house_size": null,
   "reef_ability": null,
   "wave_icon": false,
   "ability_levels": {},
