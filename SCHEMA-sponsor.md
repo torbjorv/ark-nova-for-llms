@@ -70,7 +70,7 @@ These fields are part of every row but are **constant** on sponsor cards:
 | `standard_size`, `reptile_house_size`, `large_bird_aviary_size`, `petting_zoo_size`, `aquarium_size` | `null` | animal (sponsors aren't placed in enclosures) |
 | `reef_ability` | `null` | animal |
 | `abilities` | `[]` | animal (sponsors don't carry the named animal-ability keywords; the icons they grant live in `icons`) |
-| `alternative_ability` | `null` | animal (alt-ability box is an animal-card feature) |
+| `alternative_ability` | `null` | animal, final-scoring (no sponsor card carries an alt-ability box) |
 | `tier_thresholds` | `[]` | conservation-project, final-scoring |
 | `tier_rewards` | `[]` | conservation-project, final-scoring |
 

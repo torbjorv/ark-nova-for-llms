@@ -62,7 +62,7 @@ A reward that fires once per support, on top of the slot-specific `tier_rewards`
 | `standard_size`, `reptile_house_size`, `large_bird_aviary_size`, `petting_zoo_size`, `aquarium_size` | `null` | animal |
 | `reef_ability` | `null` | animal |
 | `wave_icon` | `false` | animal, sponsor |
-| `alternative_ability` | `null` | animal |
+| `alternative_ability` | `null` | animal, final-scoring |
 
 ## Examples
 

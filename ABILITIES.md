@@ -96,7 +96,9 @@ Best-effort labels from the source — these describe what kind of effect a spon
 
 ## Alternative-ability vocabulary (for `alternative_ability`)
 
-Some animals print a smaller box below the primary ability box — the *alternative ability*. It's a game-mode option: players can agree to use the alt instead of the primary. The alt is encoded in the scalar `alternative_ability` column on animal cards (see `SCHEMA-animal.md`), not in the `abilities` array, and follows four fixed primary→alt mappings:
+Some cards print a smaller box below the main effect box — the *alternative ability*. It's a game-mode option: players can agree to use the alt instead of the primary. The alt is encoded in the scalar `alternative_ability` column (free-text in general; see `SCHEMA-animal.md` and `SCHEMA-final-scoring.md`), not in the `abilities` array.
+
+**Animal cards** (16 in the dataset) follow a closed convention — short tags using the same `name[:param]` form as `abilities[]`. The four printed primary→alt mappings:
 
 | Primary ability | Alternative ability | Levelled? |
 |---|---|---|
@@ -105,9 +107,11 @@ Some animals print a smaller box below the primary ability box — the *alternat
 | `constriction` | `clever` | no |
 | `hypnosis:3` | `determination` | no |
 
-Encoded values are short strings using the same `name[:param]` convention as `abilities[]`: `"sprint:1"`, `"sprint:2"`, `"inventive:1"`, `"inventive:2"`, `"clever"`, `"determination"`. `null` for animals with no alt-ability box.
+Encoded values: `"sprint:1"`, `"sprint:2"`, `"inventive:1"`, `"inventive:2"`, `"clever"`, `"determination"`. `null` for animals with no alt-ability box.
 
 The alt tags themselves (`sprint`, `inventive`, `clever`, `determination`) also appear in the regular `abilities` keyword list below, since a handful of animals carry them as a *real second ability* rather than as the printed alt-box (e.g. AN-411 Grizzly Bear's Inventive + Full-throated; the scuba-dive cards' Marketing). The alt-ability box is visually distinct from a regular second ability — refer to the printed card or `card_images/` when in doubt.
+
+**Final-scoring cards** use the same column for a different mechanic and store the printed prose verbatim, since the wording isn't shared across cards. Currently only `MW-009` (`"Do not use. Draw another card."`).
 
 ## Targeted-ability sub-types
 

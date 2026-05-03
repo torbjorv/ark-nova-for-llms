@@ -57,7 +57,7 @@ Single table `cards`. Every row has every column.
 | `aquarium_size` | INTEGER \| NULL | |
 | `reef_ability` | TEXT \| NULL | reef ability code (Marine Worlds) |
 | `wave_icon` | INTEGER (0/1) | wave trigger icon (Marine Worlds); SQLite has no native BOOL |
-| `alternative_ability` | TEXT \| NULL | the smaller "alt-ability" box printed below the primary ability on some animals — a game-mode option (use the alt instead of the primary). Closed vocabulary: `"sprint:1"`, `"sprint:2"`, `"inventive:1"`, `"inventive:2"`, `"clever"`, `"determination"`. NULL on animals without an alt-ability box and on all non-animal cards. The four primary→alt mappings (pilfering→sprint, venom→inventive, constriction→clever, hypnosis→determination) are documented in `ABILITIES.md`. |
+| `alternative_ability` | TEXT \| NULL | the smaller "alt-ability" box printed below the primary ability on some cards — a game-mode option (use the alt instead of the primary). Free-text. Animals (16 cards) use a closed tag convention: `"sprint:1"`, `"sprint:2"`, `"inventive:1"`, `"inventive:2"`, `"clever"`, `"determination"` (four primary→alt mappings — pilfering→sprint, venom→inventive, constriction→clever, hypnosis→determination — documented in `ABILITIES.md`). One final-scoring card (`MW-009`) carries the printed prose verbatim instead. NULL on every other card. |
 
 ### JSON-typed columns
 

@@ -28,9 +28,15 @@ Read [SCHEMA.md](./SCHEMA.md) first for the global enums and invariants.
 
 The validator enforces matching lengths when both arrays are non-empty, and that each `tier_rewards` entry is a string.
 
+### Alternative ability
+
+| Field | Type | Description |
+|---|---|---|
+| `alternative_ability` | string or null | Verbatim printed prose of the small "alt-ability" strip on the bottom of a final-scoring card, when present. `null` on every final-scoring card except `MW-009` (`"Do not use. Draw another card."`). The same column on animal cards uses a closed tag vocabulary; the final-scoring usage is free-text because the printed wording isn't shared across multiple cards. |
+
 ## Always null/empty for final-scoring cards
 
-Final-scoring cards are extremely sparse: aside from the common identity fields and the tiered-scoring pair, every other schema field is constant.
+Final-scoring cards are extremely sparse: aside from the common identity fields, the tiered-scoring pair, and the rare `alternative_ability`, every other schema field is constant.
 
 | Field | Constant |
 |---|---|
@@ -39,7 +45,6 @@ Final-scoring cards are extremely sparse: aside from the common identity fields 
 | `size`, `appeal`, `conservation_points`, `strength`, `reputation_requirement`, `bonus_reward`, `money_cost` | `null` |
 | `standard_size`, `reptile_house_size`, `large_bird_aviary_size`, `petting_zoo_size`, `aquarium_size`, `reef_ability` | `null` |
 | `wave_icon` | `false` |
-| `alternative_ability` | `null` |
 
 The category being scored is captured in `name` and `text` (e.g. "Large Animal Zoo" → animals of size 4–5); it is not encoded as a structured filter.
 
