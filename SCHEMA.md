@@ -85,7 +85,10 @@ Sea Animals are an animal *category* (captured by `"sea-animal"` in the `icons` 
 `abilities`, `requires`, `triggers` each draw from the closed vocabulary in [`ABILITIES.md`](./ABILITIES.md). Each tag must be defined there before it can appear in a row. The validator enforces this.
 
 The semantics differ by tag-field role:
-- `abilities` — ability keywords printed on the card itself (e.g. `sprint`, `venom`, `inventive`). Animal-category icons are **not** here — they live in the `icons` field above.
+- `abilities` — ability keywords printed on the card itself (e.g. `sprint`, `venom`, `inventive`). Animal-category icons are **not** here — they live in the `icons` field above. Some abilities take a parameter, encoded `name:param`:
+  - **Leveled abilities** (the printed 1–5 level) — `"sprint:3"`, `"jumping:2"`, `"scavenging:5"`. Closed set: `adapt`, `digging`, `flock`, `glide`, `hunter`, `hypnosis`, `jumping`, `perception`, `pilfering`, `posturing`, `pouch`, `scavenging`, `shark-attack`, `snapping`, `sprint`, `sunbathing`, `venom`.
+  - **Targeted abilities** (the printed action / continent target) — `"iconic:europe"`, `"boost:sponsors"`, `"magnet:sea-animal"`. Closed set: `iconic` (target ∈ continents), `boost` / `action` / `multiplier` (target ∈ action-card names), `magnet` (target ∈ `sponsors`/`sea-animal`).
+  - All other abilities are bare names (e.g. `"petting"`, `"full-throated"`, `"constriction"`). The validator enforces that leveled / targeted abilities always carry a param and other abilities never do.
 - `requires` — prerequisite tags that must be satisfied to play / support / activate. Many `requires` values reference the same tag names that appear in `icons` (e.g. `requires: ["predator","predator"]` checks for two predator icons in the zoo).
 - `triggers` — when the card's effect fires (`immediate`, `ongoing`, `end`, plus reactive triggers).
 
@@ -101,4 +104,4 @@ Per-type schemas document which of these roles apply to which card types.
 
 ## Validation
 
-`python scripts/validate.py` enforces field presence, type correctness, enum membership, tag membership, `ability_levels` / `ability_targets` key consistency, and `tier_thresholds` / `tier_rewards` length matching. Run it before committing.
+`python scripts/validate.py` enforces field presence, type correctness, enum membership, tag membership, parameter contracts on leveled / targeted abilities, and `tier_thresholds` / `tier_rewards` length matching. Run it before committing.

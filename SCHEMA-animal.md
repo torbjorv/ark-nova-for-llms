@@ -57,11 +57,9 @@ To find animals placeable in a given enclosure kind, filter on the matching `*_s
 
 | Field | Type | Description |
 |---|---|---|
-| `abilities` | array of tag | **Ability keywords only** — `sprint`, `venom`, `inventive`, etc., from `ABILITIES.md`. Animal-category icons (`bear`, `bird`, `predator`, `sea-animal`, …) live in the structured `icons` field above, **not** here. **Duplicates encode multiplicity.** `[]` if the card has no ability keyword. |
+| `abilities` | array of tag | **Ability keywords only** — from `ABILITIES.md`. Animal-category icons (`bear`, `bird`, `predator`, `sea-animal`, …) live in the structured `icons` field above, **not** here. Each entry is either a bare name (`"inventive"`, `"petting"`) or `name:param` for leveled / targeted abilities: leveled (printed 1–5 level) as `"sprint:3"`, `"snapping:2"`, `"scavenging:5"`; targeted as `"iconic:europe"`, `"boost:sponsors"`, `"magnet:sea-animal"`. See `SCHEMA.md`'s `abilities` section for the closed leveled / targeted sets. **Duplicates encode multiplicity.** `[]` if the card has no ability keyword. |
 | `requires` | array of tag | Prereq tags from `ABILITIES.md` — enclosure prereqs, adjacency prereqs, category prereqs (e.g. `["predator","predator"]` for *2 predator icons in the zoo*). Duplicates allowed. `[]` if no prerequisites. |
-| `ability_levels` | object | `{tag: int}` for level-bearing abilities (e.g. `{"snapping": 2}` for Snapping 2). Keys must also appear in `abilities`. `{}` if none. |
-| `ability_targets` | object | `{tag: string}` for parameterised abilities (e.g. `{"iconic": "europe"}`). Keys must also appear in `abilities`. `{}` if none. |
-| `alternative_ability` | string or null | The smaller "alternative ability" box printed below the primary ability on some animals — a game-mode option where players agree to use the alt instead of the primary. Encoded as a single short string with the level appended where applicable: `"sprint-1"`, `"sprint-2"`, `"inventive-1"`, `"inventive-2"`, `"clever"`, `"determination"`. `null` for animals with no alternative-ability box. The four printed primary→alt patterns are listed in `ABILITIES.md`. Animals with two real ability boxes (Grizzly Bear's Inventive + Full-throated, Loggerhead Sea Turtle's Scuba-Dive + Marketing, etc.) carry both tags in `abilities` and leave this field `null` — the alt-ability box is visually distinct from a regular second ability. |
+| `alternative_ability` | string or null | The smaller "alternative ability" box printed below the primary ability on some animals — a game-mode option where players agree to use the alt instead of the primary. Encoded as a single short string using the same `name[:param]` convention as `abilities[]`: `"sprint:1"`, `"sprint:2"`, `"inventive:1"`, `"inventive:2"`, `"clever"`, `"determination"`. `null` for animals with no alternative-ability box. The four printed primary→alt patterns are listed in `ABILITIES.md`. Animals with two real ability boxes (Grizzly Bear's Inventive + Full-throated, Loggerhead Sea Turtle's Scuba-Dive + Marketing, etc.) carry both tags in `abilities` and leave this field `null` — the alt-ability box is visually distinct from a regular second ability. |
 
 ### Marine Worlds reef payload
 
@@ -105,7 +103,7 @@ Standard enclosure, no rock/water requirement, multi-icon prereq (Predator ×2):
   "reputation_requirement": null,
   "bonus_reward": null,
   "money_cost": 22,
-  "text": "Gain {} X-token -token for each bear icon in all zoos (max.3). / Hire an association worker.",
+  "text": "",
   "notes": "Latin: Ursus arctos horribilis",
   "standard_size": 5,
   "reptile_house_size": null,
@@ -114,13 +112,13 @@ Standard enclosure, no rock/water requirement, multi-icon prereq (Predator ×2):
   "aquarium_size": null,
   "reef_ability": null,
   "wave_icon": false,
-  "ability_levels": {},
-  "ability_targets": {},
   "alternative_ability": null,
   "tier_thresholds": [],
   "tier_rewards": []
 }
 ```
+
+(Currently `text` is `""` for every animal row — see issue #8 for the planned audit that will populate verbatim card text where the printed ability has effect text the tag alone can't capture.)
 
 ### Reptile with alt enclosure — Nile Crocodile (`AN-469`, `5W (RH 3)`)
 
@@ -136,10 +134,8 @@ Standard *and* small-reptile-house, one water icon, levelled ability:
   "water_icons": 1,
   "icons": ["reptile", "africa"],
   "size": 5,
-  "abilities": ["snapping"],
+  "abilities": ["snapping:2"],
   "requires": ["reptile", "reptile", "reptile"],
-  "ability_levels": {"snapping": 2},
-  "ability_targets": {},
   "standard_size": 5,
   "reptile_house_size": 3,
   "large_bird_aviary_size": null,
@@ -165,8 +161,7 @@ Aquarium-only sea animal, wave-trigger, reef payload. Sea-animal identity comes 
   "water_icons": 0,
   "icons": ["sea-animal", "australia"],
   "size": 2,
-  "abilities": ["posturing"],
-  "ability_levels": {"posturing": 1},
+  "abilities": ["posturing:1"],
   "standard_size": null,
   "aquarium_size": 1,
   "reef_ability": "KIOSK/PAV",

@@ -40,19 +40,34 @@ REQUIRED_FIELDS = {
     "aquarium_size": (int, type(None)),
     "reef_ability": (str, type(None)),
     "wave_icon": bool,
-    "ability_levels": dict,
-    "ability_targets": dict,
     "alternative_ability": (str, type(None)),
     "tier_thresholds": list,
     "tier_rewards": list,
 }
 
+# Abilities that take an integer level as `name:N` (1..5 in the printed deck).
+LEVELED_ABILITIES = {
+    "adapt", "digging", "flock", "glide", "hunter", "hypnosis", "jumping",
+    "perception", "pilfering", "posturing", "pouch", "scavenging", "shark-attack",
+    "snapping", "sprint", "sunbathing", "venom",
+}
+
+# Abilities that take a string target as `name:<target>`, with the allowed
+# targets enumerated per ability.
+TARGETED_ABILITIES = {
+    "iconic": {"africa", "americas", "asia", "europe", "australia"},
+    "boost": {"association", "sponsors", "cards", "build", "animals"},
+    "action": {"association", "sponsors", "cards", "build"},
+    "multiplier": {"association", "sponsors", "cards", "build"},
+    "magnet": {"sponsors", "sea-animal"},
+}
+
 # `alternative_ability` is the smaller "alt-ability" box printed below the
 # primary ability on certain animal cards. Closed vocabulary: the four known
 # primary→alt mappings. Pilfering→Sprint and Venom→Inventive carry a level
-# matching the primary; Constriction→Clever and Hypnosis→Determination are
-# unlevelled.
-ALT_ABILITY_PATTERN = re.compile(r"^(?:(?:sprint|inventive)-[1-9]|clever|determination)$")
+# matching the primary (encoded `sprint:N` / `inventive:N`); Constriction→Clever
+# and Hypnosis→Determination are unlevelled (bare name).
+ALT_ABILITY_PATTERN = re.compile(r"^(?:(?:sprint|inventive):[1-9]|clever|determination)$")
 
 GAMES_ENUM = {"base", "marine-worlds"}
 TYPE_ENUM = {"animal", "sponsor", "conservation-project", "final-scoring"}
@@ -107,26 +122,46 @@ def check_row(row: dict, lineno: int, valid_tags: set[str]) -> list[str]:
         if icon not in ICON_ENUM:
             errors.append(f"{prefix}: invalid icon `{icon}`")
 
-    for tag_field in ("abilities", "requires", "triggers"):
+    for tag_field in ("requires", "triggers"):
         for tag in row.get(tag_field, []) or []:
             if tag not in valid_tags:
                 errors.append(f"{prefix}: `{tag_field}` tag `{tag}` not defined in ABILITIES.md")
 
-    abilities = row.get("abilities") or []
-    for ab_field in ("ability_levels", "ability_targets"):
-        m = row.get(ab_field) or {}
-        if not isinstance(m, dict):
+    # `abilities` entries are `name` or `name:param`. The bare name must be in
+    # ABILITIES.md. A `:param` is allowed only when the ability is leveled or
+    # targeted; the param must match the contract for that ability.
+    for entry in row.get("abilities", []) or []:
+        if not isinstance(entry, str) or not entry:
+            errors.append(f"{prefix}: `abilities` entry is not a non-empty string")
             continue
-        for k, v in m.items():
-            if k not in abilities:
+        name, sep, param = entry.partition(":")
+        if name not in valid_tags:
+            errors.append(f"{prefix}: `abilities` tag `{name}` not defined in ABILITIES.md")
+            continue
+        if not sep:
+            if name in LEVELED_ABILITIES:
                 errors.append(
-                    f"{prefix}: `{ab_field}` key `{k}` is not in `abilities`"
+                    f"{prefix}: `abilities` entry `{name}` is leveled and must be encoded as `{name}:N`"
                 )
-            expected_type = int if ab_field == "ability_levels" else str
-            if not isinstance(v, expected_type):
+            elif name in TARGETED_ABILITIES:
                 errors.append(
-                    f"{prefix}: `{ab_field}[{k}]` has wrong type ({type(v).__name__})"
+                    f"{prefix}: `abilities` entry `{name}` is targeted and must be encoded as `{name}:<target>`"
                 )
+            continue
+        if name in LEVELED_ABILITIES:
+            if not (param.isdigit() and 1 <= int(param) <= 9):
+                errors.append(
+                    f"{prefix}: `abilities` entry `{entry}` — leveled ability requires integer level"
+                )
+        elif name in TARGETED_ABILITIES:
+            if param not in TARGETED_ABILITIES[name]:
+                errors.append(
+                    f"{prefix}: `abilities` entry `{entry}` — target `{param}` not in allowed set for `{name}`"
+                )
+        else:
+            errors.append(
+                f"{prefix}: `abilities` entry `{entry}` — `{name}` is not a leveled or targeted ability and must not carry `:param`"
+            )
 
     alt = row.get("alternative_ability")
     if isinstance(alt, str):

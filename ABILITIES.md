@@ -44,7 +44,7 @@ The 8 official animal categories from the rulebook (base manual page 13: *"There
 - `reptile` — reptile category icon (covers all reptiles).
 - `sea-animal` — sea-animal category icon (Marine Worlds; cards showing the octopus icon).
 
-Note: `sea-animal` also appears as a sub-type value in `ability_targets` (e.g. for *Sea Animal Magnet*) — same string, different field namespace.
+Note: `sea-animal` also appears as a target in the `abilities[]` `name:target` form (e.g. `magnet:sea-animal` for *Sea Animal Magnet*) — same string, different role.
 
 ## Card-has-value flags
 
@@ -100,18 +100,18 @@ Some animals print a smaller box below the primary ability box — the *alternat
 
 | Primary ability | Alternative ability | Levelled? |
 |---|---|---|
-| `pilfering` (level N) | `sprint` (level N) | yes — level matches the primary |
-| `venom` (level N) | `inventive` (level N) | yes — level matches the primary |
+| `pilfering:N` | `sprint:N` | yes — level matches the primary |
+| `venom:N` | `inventive:N` | yes — level matches the primary |
 | `constriction` | `clever` | no |
-| `hypnosis` (always 3 in current data) | `determination` | no |
+| `hypnosis:3` | `determination` | no |
 
-Encoded values are short strings: `"sprint-1"`, `"sprint-2"`, `"inventive-1"`, `"inventive-2"`, `"clever"`, `"determination"`. `null` for animals with no alt-ability box.
+Encoded values are short strings using the same `name[:param]` convention as `abilities[]`: `"sprint:1"`, `"sprint:2"`, `"inventive:1"`, `"inventive:2"`, `"clever"`, `"determination"`. `null` for animals with no alt-ability box.
 
 The alt tags themselves (`sprint`, `inventive`, `clever`, `determination`) also appear in the regular `abilities` keyword list below, since a handful of animals carry them as a *real second ability* rather than as the printed alt-box (e.g. AN-411 Grizzly Bear's Inventive + Full-throated; the scuba-dive cards' Marketing). The alt-ability box is visually distinct from a regular second ability — refer to the printed card or `card_images/` when in doubt.
 
-## Sub-type vocabulary (for `ability_targets`)
+## Targeted-ability sub-types
 
-These strings appear as values in the `ability_targets` map, pairing with parameterised ability tags like `multiplier`, `boost`, `action`, `iconic`, `magnet`.
+These strings appear as the `target` half of `name:target` entries in `abilities[]`, pairing with the targeted-ability tags `multiplier`, `boost`, `action`, `iconic`, `magnet`.
 
 - `association` — the Association action card.
 - `sponsors` — sponsor cards.
@@ -124,6 +124,14 @@ These strings appear as values in the `ability_targets` map, pairing with parame
 ## Ability keywords (animal cards)
 
 The icon / keyword printed on an animal card that drives its special effect. Most of these correspond to named abilities in the game; definitions here are best-effort and should be confirmed against card text.
+
+Some abilities take a parameter, encoded as `name:param` in `abilities[]`:
+
+- **Leveled** (1–5 printed level): `adapt`, `digging`, `flock`, `glide`, `hunter`, `hypnosis`, `jumping`, `perception`, `pilfering`, `posturing`, `pouch`, `scavenging`, `shark-attack`, `snapping`, `sprint`, `sunbathing`, `venom`. Encoded `"sprint:3"`, `"snapping:2"`, etc. The validator requires a level whenever one of these names appears.
+- **Targeted** (parameter is an enum target): `iconic` (target ∈ continents), `boost` / `action` / `multiplier` (target ∈ `association`/`sponsors`/`cards`/`build`/`animals`), `magnet` (target ∈ `sponsors`/`sea-animal`). Encoded `"iconic:europe"`, `"boost:sponsors"`, `"magnet:sea-animal"`.
+- All other abilities are bare names (no `:param`).
+
+Note that `inventive` is **not** leveled — it has a single non-numeric form across all five cards that carry it. The matched alt-ability `inventive:N` (paired with primary `venom:N`) does carry a level and that's encoded the same way as leveled abilities; it's an alt-box value, not a primary-`abilities[]` value, so the two don't collide.
 
 - `action` — grants or relates to the action mechanic. (verify)
 - `adapt` — adaptation ability (Marine Worlds). (verify)

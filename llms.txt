@@ -57,7 +57,7 @@ Single table `cards`. Every row has every column.
 | `aquarium_size` | INTEGER \| NULL | |
 | `reef_ability` | TEXT \| NULL | reef ability code (Marine Worlds) |
 | `wave_icon` | INTEGER (0/1) | wave trigger icon (Marine Worlds); SQLite has no native BOOL |
-| `alternative_ability` | TEXT \| NULL | the smaller "alt-ability" box printed below the primary ability on some animals — a game-mode option (use the alt instead of the primary). Closed vocabulary: `"sprint-1"`, `"sprint-2"`, `"inventive-1"`, `"inventive-2"`, `"clever"`, `"determination"`. NULL on animals without an alt-ability box and on all non-animal cards. The four primary→alt mappings (pilfering→sprint, venom→inventive, constriction→clever, hypnosis→determination) are documented in `ABILITIES.md`. |
+| `alternative_ability` | TEXT \| NULL | the smaller "alt-ability" box printed below the primary ability on some animals — a game-mode option (use the alt instead of the primary). Closed vocabulary: `"sprint:1"`, `"sprint:2"`, `"inventive:1"`, `"inventive:2"`, `"clever"`, `"determination"`. NULL on animals without an alt-ability box and on all non-animal cards. The four primary→alt mappings (pilfering→sprint, venom→inventive, constriction→clever, hypnosis→determination) are documented in `ABILITIES.md`. |
 
 ### JSON-typed columns
 
@@ -67,11 +67,9 @@ Stored as JSON text; query with the JSON1 functions. **Duplicates encode multipl
 |---|---|---|
 | `games` | array of TEXT | `["base","marine-worlds"]`, `["base"]`, `["marine-worlds"]` — see *Games semantics* below |
 | `icons` | array of TEXT | `["primate","primate","africa"]` (animal), `["science"]` (sponsor), `[]` (project / final-scoring). Unified vocabulary: continents, animal categories, plus `rock` / `water` / `science`. See *Icons* below. |
-| `abilities` | array of TEXT | `["sprint"]` |
+| `abilities` | array of TEXT | `["sprint:3"]`, `["iconic:europe"]`, `["petting","pouch:1"]`, `["multiplier:sponsors","flock:4"]` — each entry is `name` or `name:param` (see *Abilities* below) |
 | `requires` | array of TEXT | `["bear","animals-ii"]` |
 | `triggers` | array of TEXT | `["ongoing","end"]` |
-| `ability_levels` | object: tag → INTEGER | `{"sprint": 3}` |
-| `ability_targets` | object: tag → TEXT | `{"iconic": "europe"}` |
 | `tier_thresholds` | array of INTEGER | conservation-project / final-scoring tier thresholds (`[]` if no escalating ladder — see partnership / management-plan CPs) |
 | `tier_rewards` | array of TEXT | conservation-project / final-scoring rewards per slot. Each entry is short text — `"<N> CP"` for plain rewards, e.g. `"2 CP + Hunter 1"` or `"2 CP + 2 rep"` when a slot grants more than CP. Same length as `tier_thresholds` when both are populated. |
 
@@ -80,8 +78,19 @@ Idioms:
 - **Membership:** `EXISTS (SELECT 1 FROM json_each(<col>) WHERE value = '<tag>')`
 - **Occurrence count** (multiplicity): `(SELECT COUNT(*) FROM json_each(<col>) WHERE value = '<tag>')`
 - **Array length:** `json_array_length(<col>)`
-- **Object lookup:** `json_extract(ability_levels, '$.sprint')`
 - **All distinct values:** `SELECT DISTINCT value FROM cards, json_each(cards.abilities)`
+- **Match an ability regardless of level/target:** `value = 'pilfering' OR value GLOB 'pilfering:*'` (the bare-name form covers cards where the ability is non-leveled and the GLOB covers `pilfering:1`, `pilfering:2`, etc.). For abilities that are *always* leveled or *always* targeted you can drop the bare-name half — e.g. `value GLOB 'sprint:*'`.
+- **Match a specific level/target:** plain equality, e.g. `value = 'jumping:3'` or `value = 'iconic:europe'`.
+
+### Abilities
+
+`abilities` entries are either a bare ability name (`"petting"`, `"full-throated"`, `"constriction"`) or `name:param` for parameterised abilities:
+
+- **Leveled** (parameter is the printed 1–5 level) — `adapt`, `digging`, `flock`, `glide`, `hunter`, `hypnosis`, `jumping`, `perception`, `pilfering`, `posturing`, `pouch`, `scavenging`, `shark-attack`, `snapping`, `sprint`, `sunbathing`, `venom`. Encoded `"sprint:3"`, `"snapping:2"`, etc.
+- **Targeted** (parameter is an enum string) — `iconic` (target ∈ continents), `boost` / `action` / `multiplier` (target ∈ `association` / `sponsors` / `cards` / `build` / `animals`), `magnet` (target ∈ `sponsors` / `sea-animal`). Encoded `"iconic:europe"`, `"boost:sponsors"`, `"magnet:sea-animal"`.
+- All other abilities never carry a `:param` (validator-enforced).
+
+`inventive` is non-leveled in `abilities[]` (always bare); when it appears in `alternative_ability` paired with primary `venom:N` it does carry the level (`"inventive:1"`, `"inventive:2"`).
 
 ### Games semantics
 
