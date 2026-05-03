@@ -16,23 +16,23 @@ When in doubt about a card's text, an icon's meaning, or a rules edge case, cons
 - `source_data/Manual - Ark Nova.pdf` — official base-game rulebook. Authoritative for terminology and rules.
 - `source_data/Manual - Marine expansion.pdf` — official Marine Worlds rulebook. Authoritative for wave-trigger, reef-ability, aquarium / large-reptile-house, and Sea Animal mechanics.
 - `source_data/arknovaanimals_VM_v2.xlsx` — community-maintained structured spreadsheet (Animals / Sponsors / Conservation / Final Scoring sheets). Historical: was the source the deprecated build pipeline read from. Reference only — `cards.jsonl` is now hand-edited; when in conflict with the printed cards, the cards win.
-- `source_data/AN_Exp_1_AllCards_EN.pdf` — official Marine Worlds all-cards reference PDF. Source of the high-resolution per-card images under `source_data/card_images/`.
+- `source_data/AN_Cards_E_Front_Low1.pdf`, `source_data/AN_Cards_E_Front_Low2.pdf`, `source_data/AN_Exp_1_AllCards_EN.pdf` — official front-faces PDFs (138 + 107 + 111 pages). Source of every per-card image under `source_data/card_images/`.
 
 ## Card images
 
-`source_data/card_images/` holds one PNG per card, named `<id>.png` (`AN-001.png`, `MW-529.png`, …). Use these when a question requires visual confirmation that the structured fields can't resolve (which icons are illustrated on a card, exact printed wording, layout details).
+`source_data/card_images/` holds one PNG per card, named `<id>.png` (`AN-001.png`, `MW-529.png`, …) at 1439×2010 px (~580 DPI), extracted from the official front-faces PDFs above. Use these when a question requires visual confirmation that the structured fields can't resolve (which icons are illustrated on a card, exact printed wording, layout details).
 
 - **Top level (313 files)** — one image per card, full coverage of every id in `cards.jsonl`.
-- `_unmatched/` (50 files) — player action cards from the marine PDF (BUILD / CARDS / ANIMALS / SPONSORS / ASSOCIATION at multiple levels). Not represented in `cards.jsonl`.
-- `_duplicates/` (61 files) — lower-resolution second copies of the MW cards from the ssimeonoff `cards7` grid sheet. Primaries kept at the top level come from the marine PDF (~6× larger).
-- `_composite_src/` — the original ssimeonoff grid sheets (`cards1.jpg`…`cards7.jpg`) the top-level images were sliced from. Reference only.
-- `_rename_log.jsonl` — per-file decision log from the rename pass: original path, assigned id, observed title, status, and any collision-resolution notes.
+- `action_cards/` (60 files) — player action cards (BUILD / CARDS / ANIMALS / SPONSORS / ASSOCIATION). Not in `cards.jsonl`. Named `an-<action>-L{1,2}.png` for the 10 base-game cards and `mw-<action><variation>-L{1,2}.png` for the 50 marine cards (variation `0` is the marine reprint of base L1/L2 with the seahorse marker; variations `1`–`4` are alternate upgrades introduced by Marine Worlds).
+- `_extract_log.jsonl` — per-file provenance log: source PDF page → assigned id, plus reprint-copy notes. `cards.jsonl` is the source of truth; this log is reference only.
 
-**Known data discrepancies surfaced during the rename pass** (starting points for any verification pass):
+**Known reprint pairs.** 17 AN/MW pairs are visually identical and share a single physical card; the MW image is a copy of the AN image:
 
-- 10 visually-identical AN/MW reprint pairs (`{101,102,131}` conservation, `{207,208,225,226,227,250,261}` sponsor) share a single physical card. The same image is filed under both ids by copy. If a real visual difference is ever found (e.g. a wave icon present on only the MW print), update `cards.jsonl` accordingly and split the images.
-- `MW-548` image title reads "Lined Seahorse" (Hippocampus erectus) but `cards.jsonl` names it "Short-Snouted Seahorse" — likely a `cards.jsonl` data error.
-- `Biodiverse Zoo` (`AN-009` / `MW-009`) is rule-identical in `cards.jsonl` but the MW reprint almost certainly adds the sea-animal icon to the illustrated category row. `cards.jsonl` doesn't capture which icons are drawn on a final-scoring card, so this difference doesn't appear as a field diff.
+- Conservation projects: `MW-{001, 003, 005, 008, 009, 010, 011}` ↔ `AN-{001, 003, 005, 008, 009, 010, 011}`
+- Final scoring: `MW-{101, 102, 131}` ↔ `AN-{101, 102, 131}`
+- Sponsors: `MW-{207, 208, 225, 226, 227, 250, 261}` ↔ `AN-{207, 208, 225, 226, 227, 250, 261}`
+
+If a real visual difference is ever found on one of these (e.g. a wave icon present on only the MW print), update `cards.jsonl` accordingly and split the images.
 
 ## Iconography
 
